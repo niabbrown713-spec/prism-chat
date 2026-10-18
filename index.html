@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prism Chat Room</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div class="chat-container">
+        <!-- Username Login Form View -->
+        <div id="loginScreen" class="login-screen">
+            <h2>Choose Your Chat Name</h2>
+            <p style="color: #666; font-size: 0.9rem;">Enter a name to join the live chat room</p>
+            <form id="loginForm" style="width: 100%; display: flex; flex-direction: column; gap: 15px;">
+                <input type="text" id="usernameInput" placeholder="Your name..." autocomplete="off" required>
+                <button type="submit">Join Chat Room</button>
+            </form>
+        </div>
+
+        <!-- Chat Window View (Hidden until username is chosen) -->
+        <div id="chatWindow" class="hidden" style="display: flex; flex-direction: column; height: 100%;">
+            <div class="chat-header">
+                <h2 id="roomTitle">Live Chat Room</h2>
+            </div>
+
+            <div class="chat-messages" id="chatMessages"></div>
+
+            <form class="chat-input-area" id="chatForm">
+                <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off" required>
+                <button type="submit">Send</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Script loading from the local server pipeline -->
+    <script src="/socket.io.js"></script>
+    <script src="prism.js"></script>
+</body>
+</html>
