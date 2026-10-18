@@ -6,23 +6,37 @@ const fs = require('fs');
 const app = express();
 const server = http.createServer(app);
 
-// Absolute fallback injection loop
+// Initialize Socket.IO with cross-origin rights
 let io;
 try {
     const { Server } = require('socket.io');
     io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } });
 } catch (e) {
-    console.log("Syncing modules fallback frame...");
-    require('child_process').execSync('npm install socket.io express --no-audit --no-fund');
     const { Server } = require('socket.io');
     io = new Server(server, { cors: { origin: "*", methods: ["GET", "POST"] } });
 }
 
-// Serve your standard public frontend assets
-app.use(express.static('public'));
+// FAILSAFE LAYOUT ROUTE: Explicitly maps paths to find index.html
+app.get('/', (req, res) => {
+    const pathsToTry = [
+        path.join(__dirname, 'public', 'index.html'),
+        path.join(__dirname, 'index.html'),
+        path.join(__dirname, '..', 'public', 'index.html')
+    ];
 
-// EMERGENCY LOCAL FALLBACK ROUTE: 
-// If the browser cannot reach the internet cloud, serve the module file from your hard drive
+    for (const targetPath of pathsToTry) {
+        if (fs.existsSync(targetPath)) {
+            return res.sendFile(targetPath);
+        }
+    }
+    res.status(404).send("Error: index.html could not be found anywhere in your project structure!");
+});
+
+// Fallback logic for serving asset directories safely
+app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(__dirname));
+
+// Emergency route serving local connection dependency
 app.get('/socket.io.js', (req, res) => {
     let localPath = path.join(__dirname, 'node_modules', 'socket.io', 'client-dist', 'socket.io.js');
     if (!fs.existsSync(localPath)) {
@@ -32,19 +46,12 @@ app.get('/socket.io.js', (req, res) => {
 });
 
 io.on('connection', (socket) => {
-    console.log(`User online: ${socket.id}`);
     socket.on('chat message', (data) => {
         io.emit('chat message', data);
     });
-    socket.on('disconnect', () => {
-        console.log(`User offline: ${socket.id}`);
-    });
 });
 
-const PORT = 3006;
+const PORT = process.env.PORT || 3005;
 server.listen(PORT, () => {
-    console.log(`\n========================================`);
-    console.log(` SUCCESS! Chat Server is running on port ${PORT}!`);
-    console.log(` Open your browser to: http://localhost:${PORT}`);
-    console.log(`========================================\n`);
+    console.log(`Server executing successfully on port ${PORT}`);
 });
