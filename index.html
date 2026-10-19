@@ -3,82 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prism Chat</title>
-    <!-- Link to your separate CSS file -->
-    <link rel="stylesheet" href="styles.css">
+    <title>Discord Enhanced Client</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <!-- DISCORD LOGIN PORTAL -->
-    <div id="loginScreen" class="login-screen">
-        <div class="login-card">
-            <h2>Welcome back!</h2>
-            <p>We're so excited to see you again!</p>
-            <form id="loginForm">
-                <label for="usernameInput">Username</label>
-                <input type="text" id="usernameInput" autocomplete="off" required>
-                <button type="submit">Log In</button>
+    <div id="authScreen" class="auth-screen">
+        <div class="auth-card">
+            <h2 id="authTitle">Create an Account</h2>
+            <p id="authSubtitle">Join the server landscape</p>
+            <form id="authForm">
+                <label>Username</label>
+                <input type="text" id="authUsername" autocomplete="off" required>
+                <label>Password</label>
+                <input type="password" id="authPassword" required>
+                <div id="avatarPickerContainer">
+                    <label>Profile Accent Color</label>
+                    <input type="color" id="authColor" value="#5865f2" style="height:40px; cursor:pointer; width:100%; margin-bottom:20px;">
+                </div>
+                <button type="submit" id="authSubmitBtn">Register</button>
             </form>
+            <span id="authToggleLink" class="toggle-link">Already have an account? Log In</span>
         </div>
     </div>
 
-    <!-- MAIN DISCORD CORE INTERFACE FRAME -->
     <div id="appContainer" class="app-container hidden">
-        
-        <!-- SIDEBAR CHANNELS SECTION -->
         <div class="sidebar">
-            <div>
-                <div class="server-header">HTML Chat Server</div>
-                <div class="channels-list">
-                    <a href="#" class="channel-item active">general</a>
-                    <a href="#" class="channel-item">lobby</a>
-                    <a href="#" class="channel-item">help-desk</a>
+            <div class="sidebar-scroller">
+                <div class="server-header">Matrix Workstation</div>
+                <div class="section-label">Channels</div>
+                <div class="channels-list" id="coreChannels">
+                    <div class="channel-item active" data-name="general">general</div>
+                    <div class="channel-item" data-name="lobby">lobby</div>
+                    <div class="channel-item" data-name="help-desk">help-desk</div>
                 </div>
+                <div class="section-label">Direct Messages</div>
+                <div class="channels-list" id="dmUsersList"></div>
             </div>
             
-            <!-- CURRENT PROFILE STATUS FOOTER -->
             <div class="user-footer">
-                <div class="avatar" id="userAvatar">U</div>
+                <div class="avatar" id="userAvatar">?</div>
                 <div class="user-info">
-                    <div class="name" id="displayProfileName">Username</div>
-                    <div class="status">Online</div>
+                    <div class="name" id="displayProfileName">Loading...</div>
+                    <div class="status" id="displayProfileId">#0000</div>
                 </div>
+                <button id="btnEditProfile" class="icon-btn" title="Edit Profile">⚙️</button>
             </div>
         </div>
 
-        <!-- PRIMARY CONVERSATION WINDOW FRAME -->
         <div class="chat-area">
-            <div class="chat-header-bar">
-                <span class="hash">#</span>
-                <span id="currentChannelLabel">general</span>
+            <div class="chat-header-bar" style="justify-content: space-between;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span class="hash">#</span>
+                    <span id="currentChannelLabel">general</span>
+                </div>
+                <button id="btnAddFriendNav" class="friend-add-btn">Add Friend</button>
             </div>
 
-            <!-- CHAT STREAM TIMELINE LOG -->
-            <div class="messages-container" id="chatMessages">
-                <div class="discord-message">
-                    <div class="avatar" style="background-color: #23a55a;">D</div>
-                    <div class="msg-content">
-                        <div class="msg-header">
-                            <span class="msg-username" style="color: #23a55a;">System Bot</span>
-                            <span class="msg-timestamp">Today</span>
-                        </div>
-                        <div class="msg-text" style="color: #949ba4; font-style: italic;">Welcome to the beginning of the server channel history.</div>
-                    </div>
-                </div>
+            <div class="messages-container" id="chatMessages"></div>
+
+            <!-- REPLYING STATUS BANNER CONTAINER -->
+            <div id="replyIndicator" class="reply-indicator-bar hidden">
+                <span id="replyIndicatorText">Replying to username...</span>
+                <button id="btnCancelReply" class="cancel-reply-btn">×</button>
             </div>
 
             <div class="input-wrapper">
                 <form id="chatForm" class="discord-input-form">
-                    <input type="text" id="messageInput" placeholder="Message #general" autocomplete="off" required>
+                    <input type="text" id="messageInput" placeholder="Message channel..." autocomplete="off" required>
                 </form>
             </div>
-
         </div>
     </div>
 
-    <!-- Script loading from the local server pipeline -->
+    <!-- PROFILE MODAL ADJUSTMENTS -->
+    <div id="profileModal" class="modal hidden">
+        <div class="modal-content">
+            <h3>Profile Customization</h3>
+            <label style="margin-top:15px; display:block;">Change Theme Accent</label>
+            <input type="color" id="modalColorInput" style="width:100%; height:40px; margin-bottom:15px; cursor:pointer;">
+            <label id="lblModalRole" style="display:block;">Request Role Badge</label>
+            <select id="modalRoleSelect" style="width:100%; padding:10px; background:#1e1f22; color:#dbdee1; border:none; border-radius:4px; margin-bottom:20px;">
+                <option value="Member">Member</option>
+                <option value="Moderator">Moderator</option>
+                <option value="Admin">Admin</option>
+            </select>
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
+                <button id="btnCancelModal" style="background:#4e5058; padding:8px 16px; border:none; color:white; border-radius:3px; cursor:pointer;">Cancel</button>
+                <button id="btnSaveModal" style="background:#248046; padding:8px 16px; border:none; color:white; border-radius:3px; cursor:pointer;">Save</button>
+            </div>
+        </div>
+    </div>
+
     <script src="/socket.io.js"></script>
-    <!-- Link to your separate client JavaScript file -->
     <script src="prism.js"></script>
 </body>
 </html>
