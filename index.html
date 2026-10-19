@@ -3,39 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prism Chat Room</title>
-    <link rel="stylesheet" href="styles.css">
+    <title>Discord Style Chat Room</title>
+    <!-- Link to your separate CSS file -->
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
-    <div class="chat-container">
-        <!-- Username Login Form View -->
-        <div id="loginScreen" class="login-screen">
-            <h2>Choose Your Chat Name</h2>
-            <p style="color: #666; font-size: 0.9rem;">Enter a name to join the live chat room</p>
-            <form id="loginForm" style="width: 100%; display: flex; flex-direction: column; gap: 15px;">
-                <input type="text" id="usernameInput" placeholder="Your name..." autocomplete="off" required>
-                <button type="submit">Join Chat Room</button>
+    <!-- DISCORD LOGIN PORTAL -->
+    <div id="loginScreen" class="login-screen">
+        <div class="login-card">
+            <h2>Welcome back!</h2>
+            <p>We're so excited to see you again!</p>
+            <form id="loginForm">
+                <label for="usernameInput">Username</label>
+                <input type="text" id="usernameInput" autocomplete="off" required>
+                <button type="submit">Log In</button>
             </form>
         </div>
+    </div>
 
-        <!-- Chat Window View (Hidden until username is chosen) -->
-        <div id="chatWindow" class="hidden" style="display: flex; flex-direction: column; height: 100%;">
-            <div class="chat-header">
-                <h2 id="roomTitle">Live Chat Room</h2>
+    <!-- MAIN DISCORD CORE INTERFACE FRAME -->
+    <div id="appContainer" class="app-container hidden">
+        
+        <!-- SIDEBAR CHANNELS SECTION -->
+        <div class="sidebar">
+            <div>
+                <div class="server-header">HTML Chat Server</div>
+                <div class="channels-list">
+                    <a href="#" class="channel-item active">general</a>
+                    <a href="#" class="channel-item">lobby</a>
+                    <a href="#" class="channel-item">help-desk</a>
+                </div>
+            </div>
+            
+            <!-- CURRENT PROFILE STATUS FOOTER -->
+            <div class="user-footer">
+                <div class="avatar" id="userAvatar">U</div>
+                <div class="user-info">
+                    <div class="name" id="displayProfileName">Username</div>
+                    <div class="status">Online</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PRIMARY CONVERSATION WINDOW FRAME -->
+        <div class="chat-area">
+            <div class="chat-header-bar">
+                <span class="hash">#</span>
+                <span id="currentChannelLabel">general</span>
             </div>
 
-            <div class="chat-messages" id="chatMessages"></div>
+            <!-- CHAT STREAM TIMELINE LOG -->
+            <div class="messages-container" id="chatMessages">
+                <div class="discord-message">
+                    <div class="avatar" style="background-color: #23a55a;">D</div>
+                    <div class="msg-content">
+                        <div class="msg-header">
+                            <span class="msg-username" style="color: #23a55a;">System Bot</span>
+                            <span class="msg-timestamp">Today</span>
+                        </div>
+                        <div class="msg-text" style="color: #949ba4; font-style: italic;">Welcome to the beginning of the server channel history.</div>
+                    </div>
+                </div>
+            </div>
 
-            <form class="chat-input-area" id="chatForm">
-                <input type="text" id="messageInput" placeholder="Type a message..." autocomplete="off" required>
-                <button type="submit">Send</button>
-            </form>
+            <div class="input-wrapper">
+                <form id="chatForm" class="discord-input-form">
+                    <input type="text" id="messageInput" placeholder="Message #general" autocomplete="off" required>
+                </form>
+            </div>
+
         </div>
     </div>
 
     <!-- Script loading from the local server pipeline -->
     <script src="/socket.io.js"></script>
+    <!-- Link to your separate client JavaScript file -->
     <script src="prism.js"></script>
 </body>
 </html>
