@@ -14,6 +14,7 @@ const io = new Server(server, {
 
 // Setup local JSON file database to remember accounts and ranks
 const DB_FILE = process.env.DATABASE_FILE || (process.env.RENDER ? '/data/database.json' : path.join(__dirname, 'database.json'));
+fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });
 if (!fs.existsSync(DB_FILE)) {
     fs.writeFileSync(DB_FILE, JSON.stringify({ users: [], globalMessages: [], privateMessages: {} }, null, 2));
 }
