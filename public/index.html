@@ -1,0 +1,1700 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prism Chat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" href="style.css">
+    
+</head>
+<body>
+
+    <div class="chat-container">
+        <!-- AUTH SCREEN (REGISTER / LOGIN) -->
+        <div id="loginScreen" class="login-screen">
+          <div id="authMainView" class="auth-main-view">
+            <h2 id="authTitle" style="color: #146daf9c;">Welcome Back!</h2>
+            <p id="authDesc" style="color: #0038a3; font-size: 0.9rem;">Log into your account to start chatting!</p>
+            <form id="loginForm" onsubmit="event.preventDefault();" style="width: 100%; display: flex; flex-direction: column; gap: 12px; text-align: start;">
+                <label style="color: #0d5e7f;">Username</label>
+                <input type="text" id="usernameInput" autocomplete="off" required>
+                <div id="secretCodeSetup" class="hidden">
+                    <label for="secretCodeInput" style="color: #0d5e7f;">Secret code for password recovery</label>
+                    <div class="password-field">
+                        <input type="password" id="secretCodeInput" autocomplete="new-password" minlength="4" maxlength="128" placeholder="Remember this code" disabled>
+                        <button type="button" id="toggleSecretCodeVisibility" class="password-toggle" aria-label="Show secret code" aria-controls="secretCodeInput" aria-pressed="false">
+                            <svg class="password-eye" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path class="password-eye-slash" d="M3 3l18 18"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    <small>You'll need this code if you forget your password.</small>
+                </div>
+                <label style="color: #0d5e7f;">Password</label>
+                <div class="password-field">
+                    <input type="password" id="passwordInput" required>
+                    <button type="button" id="togglePasswordVisibility" class="password-toggle" aria-label="Show password" aria-controls="passwordInput" aria-pressed="false">
+                        <svg class="password-eye" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path class="password-eye-slash" d="M3 3l18 18"></path>
+                        </svg>
+                    </button>
+                </div>
+                <button type="submit" id="btnSubmitLogin">Log In</button>
+                <button type="button" id="btnForgetPassword" class="auth-secondary-btn">Forgot password?</button>
+            </form>
+            <div class="res-wrap">
+                <label id="toggleAuthMode2" style="color: #0d5e7f;">Need an account?</label>
+                <div id="toggleAuthMode" class="toggle-auth">Register</div>
+            </div>
+          </div>
+          <section id="recoveryView" class="auth-flow-card hidden" aria-labelledby="recoveryTitle">
+            <h2 id="recoveryTitle">Recover Your Account</h2>
+            <p>Enter your username and the secret code you chose when you created your account.</p>
+            <form id="recoveryForm" class="auth-flow-form">
+                <label for="recoveryUsername">Username</label>
+                <input type="text" id="recoveryUsername" autocomplete="username" required>
+                <label for="recoverySecretCode">Secret code</label>
+                <div class="password-field">
+                    <input type="password" id="recoverySecretCode" autocomplete="off" required>
+                    <button type="button" id="toggleRecoverySecretVisibility" class="password-toggle" aria-label="Show secret code" aria-controls="recoverySecretCode" aria-pressed="false">
+                        <svg class="password-eye" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"></path>
+                            <circle cx="12" cy="12" r="3"></circle>
+                            <path class="password-eye-slash" d="M3 3l18 18"></path>
+                        </svg>
+                    </button>
+                </div>
+                <p id="recoveryStatus" class="auth-flow-status" role="status" aria-live="polite"></p>
+                <button type="submit" id="btnVerifyRecovery">Verify secret code</button>
+                <button type="button" id="btnBackToLogin" class="auth-secondary-btn">Back to login</button>
+            </form>
+          </section>
+          <section id="resetPasswordView" class="auth-flow-card hidden" aria-labelledby="resetPasswordTitle">
+            <div class="reset-password-icon" aria-hidden="true">
+                <svg viewBox="0 0 48 48" focusable="false">
+                    <rect x="7" y="5" width="25" height="25" rx="7"></rect>
+                    <rect x="17" y="18" width="25" height="25" rx="7"></rect>
+                    <rect x="18" y="17" width="13" height="13" rx="4" fill="#fff"></rect>
+                </svg>
+            </div>
+            <h2 id="resetPasswordTitle">Change Your Password</h2>
+            <p>Enter a new password below to change your password.</p>
+            <form id="resetPasswordForm" class="auth-flow-form">
+                <label for="newPasswordInput">New password*</label>
+                <input type="password" id="newPasswordInput" autocomplete="new-password" minlength="10" maxlength="128" required>
+                <label for="confirmPasswordInput">Re-enter new password*</label>
+                <input type="password" id="confirmPasswordInput" autocomplete="new-password" minlength="10" maxlength="128" required>
+                <div class="password-requirement">
+                    <span>Your password must contain:</span>
+                    <span id="passwordLengthRequirement" class="requirement-unmet">✓ &nbsp;At least 10 characters in length</span>
+                </div>
+                <p id="resetPasswordStatus" class="auth-flow-status" role="status" aria-live="polite"></p>
+                <button type="submit" id="btnResetPassword">Reset password</button>
+            </form>
+          </section>
+        </div>
+
+                <!-- MAIN CHAT INTERFACE WINDOW -->
+        <div id="chatWindow" class="hidden" style="display: flex; flex-direction: column; height: 100%;">
+            <div class="chat-header">
+                <div class="quick-links">
+                    <button id="btnOpenProfile" class="profile-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="24px" width="24px" fill="#FFFFFF"><path d="M5.85,17.1q1.27-0.98 2.85-1.54T12,15t3.3,0.56t2.85,1.54q0.88-1.03 1.36-2.33T20,12q0-3.33-2.34-5.66T12,4Q8.68,4 6.34,6.34T4,12q0,1.47 0.49,2.78q0.49,1.3 1.36,2.33Zm3.66-5.11Q8.5,10.98 8.5,9.5q0-1.48 1.01-2.49T12,6t2.49,1.01T15.5,9.5t-1.01,2.49T12,13q-1.47,0-2.49-1.01ZM12,22q-2.07,0-3.9-0.79q-1.82-0.79-3.17-2.14Q3.58,17.73 2.79,15.9T2,12Q2,9.92 2.79,8.1Q3.58,6.27 4.93,4.93Q6.28,3.57 8.1,2.79Q9.93,2 12,2t3.9,0.79t3.17,2.14q1.35,1.35 2.14,3.17Q22,9.92 22,12t-0.79,3.9t-2.14,3.17q-1.35,1.35-3.17,2.14T12,22Zm2.5-2.39q1.18-0.39 2.15-1.11q-0.98-0.73-2.15-1.11T12,17T9.5,17.39Q8.33,17.77 7.35,18.5q0.98,0.73 2.15,1.11T12,20t2.5-0.39Zm-1.42-9.04Q13.5,10.15 13.5,9.5T13.08,8.42T12,8T10.93,8.42T10.5,9.5t0.43,1.07T12,11t1.08-0.43ZM12,9.5Zm0,9Z"></path></svg><span>Profile</span></button>
+                    <button id="btnOpenFriends" class="profile-btn friends-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="24px" width="24px" fill="#FFFFFF"><path d="M1,20V17.2q0-0.85 0.44-1.56q0.44-0.71 1.16-1.09q1.55-0.78 3.15-1.16T9,13t3.25,0.39t3.15,1.16q0.72,0.38 1.16,1.09T17,17.2V20H1Zm18,0V17q0-1.1-0.61-2.11q-0.61-1.01-1.74-1.74q1.27,0.15 2.4,0.51q1.13,0.36 2.1,0.89q0.9,0.5 1.38,1.11T23,17v3H19ZM6.18,10.83Q5,9.65 5,8T6.18,5.18T9,4t2.83,1.18T13,8t-1.17,2.82T9,12T6.18,10.83Zm11.65,0Q16.65,12 15,12q-0.27,0-0.7-0.06T13.6,11.8q0.67-0.8 1.04-1.78T15,8T14.64,5.97T13.6,4.2q0.35-0.13 0.7-0.16T15,4q1.65,0 2.82,1.18T19,8t-1.18,2.82ZM3,18H15V17.2q0-0.27-0.14-0.5q-0.14-0.22-0.36-0.35q-1.35-0.68-2.72-1.01T9,15T6.23,15.34T3.5,16.35Q3.28,16.48 3.14,16.7Q3,16.93 3,17.2V18Zm7.41-8.59Q11,8.82 11,8T10.41,6.59T9,6Q8.18,6 7.59,6.59Q7,7.18 7,8T7.59,9.41T9,10q0.83,0 1.41-0.59ZM9,18ZM9,8Z"></path></svg><span>Friends</span></button>
+                    <button id="btnOpenSettings" class="profile-btn settings-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="24px" width="24px" fill="#FFFFFF"><path d="M9.25,22l-0.4-3.2q-0.32-0.13-0.61-0.3T7.68,18.13L4.7,19.38L1.95,14.63l2.58-1.95Q4.5,12.5 4.5,12.34q0-0.16 0-0.34t0-0.34t0.03-0.34L1.95,9.38L4.7,4.63L7.68,5.88Q7.95,5.68 8.25,5.5t0.6-0.3L9.25,2h5.5l0.4,3.2q0.33,0.13 0.61,0.3t0.56,0.38L19.3,4.63l2.75,4.75l-2.57,1.95q0.02,0.18 0.02,0.34t0,0.34t0,0.34t-0.05,0.34l2.57,1.95l-2.75,4.75l-2.95-1.25q-0.27,0.2-0.57,0.38t-0.6,0.3L14.75,22H9.25ZM11,20h1.98l0.35-2.65q0.78-0.2 1.44-0.59t1.21-0.94l2.47,1.03l0.98-1.7l-2.15-1.63q0.13-0.35 0.17-0.74T17.5,12t-0.05-0.79q-0.05-0.39-0.17-0.74l2.15-1.63l-0.98-1.7L15.98,8.2q-0.55-0.57-1.21-0.96T13.33,6.65L13,4H11.03L10.68,6.65Q9.9,6.85 9.24,7.24T8.03,8.17L5.55,7.15L4.58,8.85l2.15,1.6Q6.6,10.83 6.55,11.2T6.5,12q0,0.4 0.05,0.77t0.17,0.75L4.58,15.15l0.98,1.7L8.03,15.8q0.55,0.58 1.21,0.96t1.44,0.59L11,20Zm1.05-4.5q1.45,0 2.47-1.03T15.55,12T14.53,9.52T12.05,8.5q-1.47,0-2.49,1.02T8.55,12t1.01,2.47t2.49,1.03ZM12,12Z"></path></svg><span>Settings</span></button>
+                </div>
+                <h2 id="roomTitle"># Prism Chat</h2>
+                <div id="myIdDisplay" class="meta-id-display">Your Account ID: Fetching...</div>
+                <div id="mySocketDisplay" class="meta-id-display" style="font-style: italic; opacity: 0.8;">Live Session ID: Fetching...</div>
+            </div>
+
+            <div class="navigation-tabs">
+                <button id="tabGlobal" class="tab-btn active"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="24px" width="24px" fill="#6d99c7"><path d="M8.1,21.21q-1.82-0.79-3.17-2.14Q3.58,17.73 2.79,15.9T2,12Q2,9.92 2.79,8.1Q3.58,6.27 4.93,4.93Q6.28,3.57 8.1,2.79Q9.93,2 12,2t3.9,0.79t3.17,2.14q1.35,1.35 2.14,3.17Q22,9.92 22,12t-0.79,3.9t-2.14,3.17q-1.35,1.35-3.17,2.14T12,22q-2.07,0-3.9-0.79ZM11,19.95V18q-0.82,0-1.41-0.59T9,16V15L4.2,10.2q-0.08,0.45-0.14,0.9T4,12q0,3.03 1.99,5.3T11,19.95Zm6.9-2.55q1.02-1.13 1.56-2.51T20,12q0-2.45-1.36-4.48Q17.28,5.5 15,4.6V5q0,0.82-0.59,1.41T13,7H11V9q0,0.42-0.29,0.71T10,10H8v2h6q0.43,0 0.71,0.29T15,13v3h1q0.65,0 1.18,0.39T17.9,17.4Z"/></svg>Global</button>
+                <button id="tabPrivate" class="tab-btn">DM's<span id="dmUnreadIndicator" class="dm-unread-indicator hidden" aria-label="Unread direct messages">!</span></button>
+            </div>
+
+            <section class="online-users-panel" aria-label="Online users">
+                <div class="online-users-heading">
+                    <strong id="onlineUsersCount">Online (0)</strong>
+                </div>
+                <div id="onlineUsersList" class="online-users-list" aria-live="polite">
+                    <span class="online-users-empty">No one is online.</span>
+                </div>
+            </section>
+
+            <div id="dmTargetBar" class="target-id-bar hidden">
+                <label for="targetSocketIdInput" style="font-size:0.85rem; font-weight:bold; color:#001b5b;">Recipient Account ID:</label>
+                <input type="text" id="targetSocketIdInput" placeholder="Enter an account ID...">
+                <button type="button" id="btnOpenDmById" class="profile-btn dm-choose-btn">Open chat</button>
+                <button type="button" id="btnChooseDmRecipient" class="profile-btn dm-choose-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="24px" width="24px" fill="#FFFFFF"><path d="M18,14V11H15V9h3V6h2V9h3v2H20v3H18ZM6.18,10.83Q5,9.65 5,8T6.18,5.18T9,4t2.83,1.18T13,8t-1.17,2.82T9,12T6.18,10.83ZM1,20V17.2q0-0.85 0.44-1.56q0.44-0.71 1.16-1.09q1.55-0.78 3.15-1.16T9,13t3.25,0.39t3.15,1.16q0.72,0.38 1.16,1.09T17,17.2V20H1Zm2-2H15V17.2q0-0.27-0.14-0.5q-0.14-0.22-0.36-0.35q-1.35-0.68-2.72-1.01T9,15T6.23,15.34T3.5,16.35Q3.28,16.48 3.14,16.7Q3,16.93 3,17.2V18Zm7.41-8.59Q11,8.82 11,8T10.41,6.59T9,6Q8.18,6 7.59,6.59Q7,7.18 7,8T7.59,9.41T9,10q0.83,0 1.41-0.59ZM9,8ZM9,18Z"></path></svg><span>Choose person</span></button>
+            </div>
+
+            <div id="privateChatList" class="private-chat-list hidden" role="tablist" aria-label="Private chats"></div>
+            <div class="chat-messages" id="chatMessages"></div>
+
+            <div id="replyBanner" class="reply-banner-indicator hidden">
+                <span id="replyBannerText">Replying to...</span>
+                <span id="btnCancelReply" style="cursor:pointer; font-weight:bold; color:#dc3545;">×</span>
+            </div>
+
+            <div id="pendingImagePreview" class="pending-image-preview hidden">
+                <img id="pendingImageThumbnail" alt="Selected image">
+                <span id="pendingImageName"></span>
+                <button type="button" id="btnRemovePendingImage" aria-label="Remove attached image">×</button>
+            </div>
+            <form class="chat-input-area" id="chatForm" onsubmit="event.preventDefault();">
+                <input type="file" id="messageImageFile" accept="image/*" class="hidden">
+                <button type="button" id="btnPlusImage" class="plus-img-btn" title="Attach image" aria-label="Attach image"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="24px" width="24px" fill="#8dc4ff"><path d="M12,12ZM5,21q-0.83,0-1.41-0.59T3,19V5Q3,4.17 3.59,3.59T5,3h8q0,0.42 0,0.92T13,5H5V19H19V11q0.58,0 1.08,0T21,11v8q0,0.82-0.59,1.41T19,21H5Zm1-4H18l-3.75-5l-3,4L9,13L6,17ZM17,9V7H15V5h2V3h2V5h2V7H19V9H17Z"></path></svg></button>
+                <input type="text" id="messageInput" placeholder="Type a message... Use @ to mention someone" autocomplete="off">
+                <div id="mentionSuggestions" class="mention-suggestions hidden" role="listbox" aria-label="Mention suggestions"></div>
+                <button type="submit" id="btnSendMessage"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="24px" width="24px" fill="#3f9cff"><path d="M3,20V4l19,8L3,20Zm2-3l11.85-5L5,7v3.5L11,12L5,13.5V17Zm0,0V12V7v3.5v3V17Z"></path></svg></button>
+            </form>
+        </div>
+    </div>
+
+    <div id="profileModal" class="modal-view hidden">
+        <section class="profile-panel" role="dialog" aria-modal="true" aria-labelledby="profileTitle">
+            <header class="profile-panel-header">
+                <h2 id="profileTitle">Your account</h2>
+                <button type="button" id="btnCloseProfile" class="profile-close-btn" aria-label="Close profile">×</button>
+            </header>
+            <p class="profile-intro">Signed in as <strong id="profileSignedInAs"></strong>. Your profile is saved with your account.</p>
+            <div class="profile-session-row">
+                <span>Session ID: <code id="profileSessionId"></code></span>
+                <button type="button" id="btnCopyOwnSession" class="profile-action-btn">Copy ID</button>
+            </div>
+            <p id="profileSaveStatus" class="profile-save-status" role="status" aria-live="polite"></p>
+
+            <h3 class="profile-section-title">Customize your profile</h3>
+            <div class="profile-preview-card">
+                <div id="profilePreviewBanner" class="profile-preview-banner"></div>
+                <div id="profilePreviewAvatar" class="profile-preview-avatar">
+                    <span id="profilePreviewInitial">?</span>
+                    <img id="profilePreviewImage" class="hidden" alt="">
+                    <span class="presence-dot is-online" role="img" aria-label="Online" title="Online"></span>
+                </div>
+                <div class="profile-preview-details">
+                    <div class="profile-preview-name-row">
+                        <strong id="profilePreviewName"></strong>
+                        <span id="profilePreviewPronouns"></span>
+                    </div>
+                    <p id="profilePreviewBio">Add a bio to introduce yourself.</p>
+                </div>
+            </div>
+
+            <div class="profile-fields">
+                <label for="profileDisplayName">Display name</label>
+                <input type="text" id="profileDisplayName" maxlength="32" placeholder="How should we call you?">
+                <label for="profilePronouns">Pronouns</label>
+                <input type="text" id="profilePronouns" maxlength="40" placeholder="e.g. they/them">
+                <label for="profileBio">Bio</label>
+                <textarea id="profileBio" maxlength="160" placeholder="A little about you..."></textarea>
+                <label for="profileAvatarFile">Profile picture</label>
+                <div class="profile-file-control">
+                    <input type="file" id="profileAvatarFile" accept="image/*">
+                    <label class="profile-file-button" for="profileAvatarFile">Choose image</label>
+                    <span id="profileAvatarFileName" class="profile-file-name">No image chosen</span>
+                </div>
+                <label for="profileBannerColor">Banner color</label>
+                <input type="color" id="profileBannerColor" value="#84c5d0">
+                <label for="profileBannerFile">Or use a banner image</label>
+                <div class="profile-file-control">
+                    <input type="file" id="profileBannerFile" accept="image/*">
+                    <label class="profile-file-button" for="profileBannerFile">Choose image</label>
+                    <span id="profileBannerFileName" class="profile-file-name">No image chosen</span>
+                </div>
+            </div>
+            <section class="profile-friends-section">
+                <h3 class="profile-section-title">Password recovery</h3>
+                <p>Set a secret code to recover your account if you forget your password. Existing accounts can set one here.</p>
+                <div class="profile-fields">
+                    <label for="profileRecoveryCodeInput">Secret code</label>
+                    <div class="password-field">
+                        <input type="password" id="profileRecoveryCodeInput" minlength="4" maxlength="128" autocomplete="new-password" placeholder="Enter a secret code">
+                        <button type="button" id="toggleProfileRecoveryCodeVisibility" class="password-toggle" aria-label="Show secret code" aria-controls="profileRecoveryCodeInput" aria-pressed="false">
+                            <svg class="password-eye" viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                                <path class="password-eye-slash" d="M3 3l18 18"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+                <p id="recoveryCodeSaveStatus" class="profile-save-status" role="status" aria-live="polite"></p>
+                <button type="button" id="btnSaveRecoveryCode" class="profile-action-btn">Save secret code</button>
+            </section>
+            <section class="profile-friends-section">
+                <h3 class="profile-section-title">Friends</h3>
+                <p id="profileFriendsStatus" class="profile-friends-status">Loading friends...</p>
+                <div id="profileFriendsList" class="profile-friends-list"></div>
+            </section>
+            <div class="profile-panel-actions">
+                <button type="button" id="btnSaveProfile" class="profile-action-btn">Save</button>
+                <button type="button" id="btnSignOut" class="profile-action-btn">Sign out</button>
+            </div>
+        </section>
+    </div>
+
+    <div id="settingsModal" class="modal-view hidden">
+        <section class="profile-panel settings-panel" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+            <header class="profile-panel-header">
+                <h2 id="settingsTitle">Settings</h2>
+                <button type="button" id="btnCloseSettings" class="profile-close-btn" aria-label="Close settings">×</button>
+            </header>
+            <section class="theme-settings">
+                <h3 class="profile-section-title">Theme</h3>
+                <label class="theme-toggle-row" for="darkThemeToggle">
+                    <span>Dark theme</span>
+                    <input type="checkbox" id="darkThemeToggle">
+                </label>
+                <p class="theme-settings-hint">This preference is saved on this device.</p>
+            </section>
+            <h3 class="profile-section-title">Message appearance</h3>
+            <div class="profile-fields">
+                <label for="profileMessageFont">Message font</label>
+                <select id="profileMessageFont">
+                    <option value="system-ui">System default</option>
+                    <option value="Arial">Arial</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="monospace">Monospace</option>
+                    <option value="cursive">Cursive</option>
+                </select>
+                <label for="profileMessageColor">Message color</label>
+                <input type="color" id="profileMessageColor" value="#202124">
+                <p id="profileMessageSample" class="profile-message-sample">Your messages will look like this.</p>
+            </div>
+            <p id="settingsSaveStatus" class="profile-save-status" role="status" aria-live="polite"></p>
+            <div class="profile-panel-actions">
+                <button type="button" id="btnSaveSettings" class="profile-action-btn">Save settings</button>
+            </div>
+        </section>
+    </div>
+
+    <div id="userProfileModal" class="modal-view hidden">
+        <section class="profile-panel" role="dialog" aria-modal="true" aria-labelledby="userProfileTitle">
+            <header class="profile-panel-header">
+                <h2 id="userProfileTitle">Profile</h2>
+                <button type="button" id="btnCloseUserProfile" class="profile-close-btn" aria-label="Close profile">×</button>
+            </header>
+            <div class="profile-preview-card">
+                <div id="userProfileBanner" class="profile-preview-banner"></div>
+                <div id="userProfileAvatar" class="profile-preview-avatar">
+                    <span id="userProfileInitial">?</span>
+                    <img id="userProfileImage" class="hidden" alt="">
+                    <span id="userProfilePresence" class="presence-dot is-offline" role="img" aria-label="Offline" title="Offline"></span>
+                </div>
+                <div class="profile-preview-details">
+                    <div class="profile-preview-name-row">
+                        <strong id="userProfileName"></strong>
+                        <span id="userProfilePronouns"></span>
+                    </div>
+                    <p id="userProfileBio">No bio yet.</p>
+                </div>
+            </div>
+            <p class="profile-intro">Account ID: <code id="userProfileAccountId"></code></p>
+            <p class="profile-intro">Session ID: <code id="userProfileSessionId">Offline</code></p>
+            <div id="userProfileStatus" class="profile-friends-status" role="status" aria-live="polite"></div>
+            <div class="profile-panel-actions">
+                <button type="button" id="btnToggleFriend" class="profile-action-btn">Add friend</button>
+                <button type="button" id="btnCopyUserSession" class="profile-action-btn">Copy session ID</button>
+                <button type="button" id="btnMessageUser" class="profile-action-btn">Message</button>
+            </div>
+            <section id="userRoleControls" class="profile-role-controls hidden">
+                <h3 class="profile-section-title">Manage role</h3>
+                <label for="userProfileRoleSelect">Role</label>
+                <select id="userProfileRoleSelect"></select>
+                <button type="button" id="btnSaveUserRole" class="profile-action-btn">Save role</button>
+                <p id="userRoleStatus" class="profile-friends-status" role="status" aria-live="polite"></p>
+            </section>
+        </section>
+    </div>
+
+    <div id="dmRecipientModal" class="modal-view hidden">
+        <section class="profile-panel" role="dialog" aria-modal="true" aria-labelledby="dmRecipientTitle">
+            <header class="profile-panel-header">
+                <h2 id="dmRecipientTitle">Choose someone to message</h2>
+                <button type="button" id="btnCloseDmRecipient" class="profile-close-btn" aria-label="Close">×</button>
+            </header>
+            <p id="dmRecipientStatus" class="profile-friends-status">Loading online people...</p>
+            <div id="dmRecipientList" class="profile-friends-list"></div>
+        </section>
+    </div>
+
+    <div id="friendsModal" class="modal-view hidden">
+        <section class="profile-panel friends-panel" role="dialog" aria-modal="true" aria-labelledby="friendsTitle">
+            <header class="profile-panel-header">
+                <h2 id="friendsTitle">Friends</h2>
+                <button type="button" id="btnCloseFriends" class="profile-close-btn" aria-label="Close friends">×</button>
+            </header>
+            <p id="friendsListStatus" class="profile-friends-status" role="status" aria-live="polite">Loading friends...</p>
+            <div id="friendsList" class="profile-friends-list"></div>
+        </section>
+    </div>
+
+    <div id="imageViewer" class="image-viewer hidden" role="dialog" aria-modal="true" aria-label="Enlarged image">
+        <button type="button" id="btnCloseImageViewer" class="image-viewer-close" aria-label="Close image">×</button>
+        <img id="imageViewerContent" alt="Enlarged chat attachment">
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+    const socket = io();
+    const savedTheme = localStorage.getItem('prism-theme') === 'dark' ? 'dark' : 'light';
+    document.documentElement.dataset.theme = savedTheme;
+    let currentUser = null;
+let mySocketId = "";
+let currentMode = "global";
+let isLoginMode = true;
+let activeReplyObject = null;
+const messageCache = { global: [], private: {} };
+const privateChatPeers = new Map();
+const openPrivateChats = new Set();
+let pendingMessageImage = '';
+const loginScreen = document.getElementById('loginScreen');
+const chatWindow = document.getElementById('chatWindow');
+const authMainView = document.getElementById('authMainView');
+const recoveryView = document.getElementById('recoveryView');
+const resetPasswordView = document.getElementById('resetPasswordView');
+const loginForm = document.getElementById('loginForm');
+const usernameInput = document.getElementById('usernameInput');
+const secretCodeInput = document.getElementById('secretCodeInput');
+const secretCodeSetup = document.getElementById('secretCodeSetup');
+const passwordInput = document.getElementById('passwordInput');
+const togglePasswordVisibility = document.getElementById('togglePasswordVisibility');
+const passwordEyeIcon = togglePasswordVisibility.querySelector('.password-eye');
+const toggleSecretCodeVisibility = document.getElementById('toggleSecretCodeVisibility');
+const toggleRecoverySecretVisibility = document.getElementById('toggleRecoverySecretVisibility');
+const btnSubmitLogin = document.getElementById('btnSubmitLogin');
+const authTitle = document.getElementById('authTitle');
+const authDesc = document.getElementById('authDesc');
+const toggleAuthMode = document.getElementById('toggleAuthMode');
+const toggleAuthMode2 = document.getElementById('toggleAuthMode2');
+const btnForgetPassword = document.getElementById('btnForgetPassword');
+const recoveryForm = document.getElementById('recoveryForm');
+const recoveryUsername = document.getElementById('recoveryUsername');
+const recoverySecretCode = document.getElementById('recoverySecretCode');
+const recoveryStatus = document.getElementById('recoveryStatus');
+const btnVerifyRecovery = document.getElementById('btnVerifyRecovery');
+const btnBackToLogin = document.getElementById('btnBackToLogin');
+const resetPasswordForm = document.getElementById('resetPasswordForm');
+const newPasswordInput = document.getElementById('newPasswordInput');
+const confirmPasswordInput = document.getElementById('confirmPasswordInput');
+const passwordLengthRequirement = document.getElementById('passwordLengthRequirement');
+const resetPasswordStatus = document.getElementById('resetPasswordStatus');
+const btnResetPassword = document.getElementById('btnResetPassword');
+let pendingPasswordResetToken = '';
+const roomTitle = document.getElementById('roomTitle');
+const myIdDisplay = document.getElementById('myIdDisplay');
+const mySocketDisplay = document.getElementById('mySocketDisplay');
+const tabGlobal = document.getElementById('tabGlobal');
+const tabPrivate = document.getElementById('tabPrivate');
+const onlineUsersCount = document.getElementById('onlineUsersCount');
+const onlineUsersList = document.getElementById('onlineUsersList');
+const dmTargetBar = document.getElementById('dmTargetBar');
+const targetSocketIdInput = document.getElementById('targetSocketIdInput');
+const btnOpenDmById = document.getElementById('btnOpenDmById');
+const privateChatList = document.getElementById('privateChatList');
+const mentionSuggestions = document.getElementById('mentionSuggestions');
+let mentionSuggestionUsers = [];
+const replyBanner = document.getElementById('replyBanner');
+const replyBannerText = document.getElementById('replyBannerText');
+const btnCancelReply = document.getElementById('btnCancelReply');
+const chatForm = document.getElementById('chatForm');
+const messageInput = document.getElementById('messageInput');
+const chatMessages = document.getElementById('chatMessages');
+const btnPlusImage = document.getElementById('btnPlusImage');
+const messageImageFile = document.getElementById('messageImageFile');
+const pendingImagePreview = document.getElementById('pendingImagePreview');
+const pendingImageThumbnail = document.getElementById('pendingImageThumbnail');
+const pendingImageName = document.getElementById('pendingImageName');
+const btnRemovePendingImage = document.getElementById('btnRemovePendingImage');
+const btnSendMessage = document.getElementById('btnSendMessage');
+const btnOpenProfile = document.getElementById('btnOpenProfile');
+const btnOpenSettings = document.getElementById('btnOpenSettings');
+const settingsModal = document.getElementById('settingsModal');
+const btnCloseSettings = document.getElementById('btnCloseSettings');
+const btnSaveSettings = document.getElementById('btnSaveSettings');
+const settingsSaveStatus = document.getElementById('settingsSaveStatus');
+const darkThemeToggle = document.getElementById('darkThemeToggle');
+darkThemeToggle.checked = savedTheme === 'dark';
+const profileModal = document.getElementById('profileModal');
+const profileAvatarFile = document.getElementById('profileAvatarFile');
+const profileBannerFile = document.getElementById('profileBannerFile');
+const profileAvatarFileName = document.getElementById('profileAvatarFileName');
+const profileBannerFileName = document.getElementById('profileBannerFileName');
+const profileDisplayName = document.getElementById('profileDisplayName');
+const profilePronouns = document.getElementById('profilePronouns');
+const profileBio = document.getElementById('profileBio');
+const profileBannerColor = document.getElementById('profileBannerColor');
+const profileSignedInAs = document.getElementById('profileSignedInAs');
+const profilePreviewBanner = document.getElementById('profilePreviewBanner');
+const profilePreviewInitial = document.getElementById('profilePreviewInitial');
+const profilePreviewImage = document.getElementById('profilePreviewImage');
+const profilePreviewAvatar = document.getElementById('profilePreviewAvatar');
+const profilePreviewName = document.getElementById('profilePreviewName');
+const profilePreviewPronouns = document.getElementById('profilePreviewPronouns');
+const profilePreviewBio = document.getElementById('profilePreviewBio');
+const profileSaveStatus = document.getElementById('profileSaveStatus');
+const profileRecoveryCodeInput = document.getElementById('profileRecoveryCodeInput');
+const toggleProfileRecoveryCodeVisibility = document.getElementById('toggleProfileRecoveryCodeVisibility');
+const recoveryCodeSaveStatus = document.getElementById('recoveryCodeSaveStatus');
+const btnSaveRecoveryCode = document.getElementById('btnSaveRecoveryCode');
+const profileSessionId = document.getElementById('profileSessionId');
+const profileMessageFont = document.getElementById('profileMessageFont');
+const profileMessageColor = document.getElementById('profileMessageColor');
+const profileMessageSample = document.getElementById('profileMessageSample');
+const profileFriendsStatus = document.getElementById('profileFriendsStatus');
+const profileFriendsList = document.getElementById('profileFriendsList');
+const btnOpenFriends = document.getElementById('btnOpenFriends');
+const friendsModal = document.getElementById('friendsModal');
+const btnCloseFriends = document.getElementById('btnCloseFriends');
+const friendsListStatus = document.getElementById('friendsListStatus');
+const friendsList = document.getElementById('friendsList');
+const userProfileModal = document.getElementById('userProfileModal');
+const userProfileBanner = document.getElementById('userProfileBanner');
+const userProfileAvatar = document.getElementById('userProfileAvatar');
+const userProfileInitial = document.getElementById('userProfileInitial');
+const userProfileImage = document.getElementById('userProfileImage');
+const userProfilePresence = document.getElementById('userProfilePresence');
+const userProfileName = document.getElementById('userProfileName');
+const userProfilePronouns = document.getElementById('userProfilePronouns');
+const userProfileBio = document.getElementById('userProfileBio');
+const userProfileAccountId = document.getElementById('userProfileAccountId');
+const userProfileSessionId = document.getElementById('userProfileSessionId');
+const userProfileStatus = document.getElementById('userProfileStatus');
+const btnCloseUserProfile = document.getElementById('btnCloseUserProfile');
+const btnToggleFriend = document.getElementById('btnToggleFriend');
+const btnCopyOwnSession = document.getElementById('btnCopyOwnSession');
+const btnCopyUserSession = document.getElementById('btnCopyUserSession');
+const btnMessageUser = document.getElementById('btnMessageUser');
+const userRoleControls = document.getElementById('userRoleControls');
+const userProfileRoleSelect = document.getElementById('userProfileRoleSelect');
+const btnSaveUserRole = document.getElementById('btnSaveUserRole');
+const userRoleStatus = document.getElementById('userRoleStatus');
+const dmUnreadIndicator = document.getElementById('dmUnreadIndicator');
+const btnChooseDmRecipient = document.getElementById('btnChooseDmRecipient');
+const dmRecipientModal = document.getElementById('dmRecipientModal');
+const btnCloseDmRecipient = document.getElementById('btnCloseDmRecipient');
+const dmRecipientStatus = document.getElementById('dmRecipientStatus');
+const dmRecipientList = document.getElementById('dmRecipientList');
+const imageViewer = document.getElementById('imageViewer');
+const imageViewerContent = document.getElementById('imageViewerContent');
+const btnCloseImageViewer = document.getElementById('btnCloseImageViewer');
+let imageViewerTrigger = null;
+const btnCloseProfile = document.getElementById('btnCloseProfile');
+const btnSaveProfile = document.getElementById('btnSaveProfile');
+const btnSignOut = document.getElementById('btnSignOut');
+let pendingAvatarImage = '';
+let avatarImageChanged = false;
+let pendingBannerImage = '';
+let bannerImageChanged = false;
+let onlineUserIds = new Set();
+let onlineUsersById = new Map();
+const unreadPrivateSenders = new Set();
+let viewedUserProfile = null;
+function updateDmUnreadIndicator() {
+dmUnreadIndicator.classList.toggle('hidden', unreadPrivateSenders.size === 0);
+}
+function renderDmRecipientList() {
+dmRecipientList.replaceChildren();
+const recipients = [...onlineUsersById.entries()].filter(([id]) => id !== String(currentUser && currentUser.id));
+dmRecipientStatus.textContent = recipients.length ? 'Select an online person to open a DM.' : 'No one else is online right now.';
+recipients.forEach(([userId, user]) => {
+const recipientButton = document.createElement('button');
+recipientButton.type = 'button';
+recipientButton.classList.add('profile-friend');
+recipientButton.textContent = `${user.displayName || user.username} (@${user.username}) · ${user.role || 'Member'}`;
+recipientButton.addEventListener('click', () => {
+openPrivateChat(userId, user);
+unreadPrivateSenders.delete(userId);
+updateDmUnreadIndicator();
+dmRecipientModal.classList.add('hidden');
+});
+dmRecipientList.appendChild(recipientButton);
+});
+}
+function renderOnlineUsers() {
+const users = [...onlineUsersById.entries()]
+.map(([id, user]) => ({ id, user }))
+.sort((first, second) => first.user.username.localeCompare(second.user.username));
+onlineUsersCount.textContent = `Online (${users.length})`;
+onlineUsersList.replaceChildren();
+if (!users.length) {
+const empty = document.createElement('span');
+empty.classList.add('online-users-empty');
+empty.textContent = 'No one is online.';
+onlineUsersList.appendChild(empty);
+return;
+}
+users.forEach(({ id, user }) => {
+const isCurrentUser = String(currentUser && currentUser.id) === id;
+const userButton = document.createElement('button');
+userButton.type = 'button';
+userButton.classList.add('online-user-pill');
+userButton.setAttribute('aria-label', `${user.displayName || user.username}, online${isCurrentUser ? ', you' : ''}`);
+const dot = document.createElement('span');
+dot.classList.add('online-user-dot');
+dot.setAttribute('aria-hidden', 'true');
+const name = document.createElement('span');
+name.textContent = `${user.displayName || user.username}${isCurrentUser ? ' (you)' : ''}`;
+userButton.append(dot, name);
+if (!isCurrentUser) {
+userButton.title = `View ${user.displayName || user.username}'s profile`;
+userButton.addEventListener('click', () => showUserProfile(user));
+} else {
+userButton.disabled = true;
+}
+onlineUsersList.appendChild(userButton);
+});
+}
+function renderPrivateChatList() {
+privateChatList.replaceChildren();
+privateChatList.classList.toggle('hidden', currentMode !== 'private' || openPrivateChats.size === 0);
+openPrivateChats.forEach(userId => {
+const peer = privateChatPeers.get(userId) || onlineUsersById.get(userId) || { username: `Account ${userId}`, displayName: `Account ${userId}` };
+const chatButton = document.createElement('button');
+chatButton.type = 'button';
+chatButton.classList.add('private-chat-tab');
+chatButton.setAttribute('role', 'tab');
+chatButton.setAttribute('aria-selected', String(currentMode === 'private' && targetSocketIdInput.value.trim() === userId));
+chatButton.classList.toggle('active', currentMode === 'private' && targetSocketIdInput.value.trim() === userId);
+chatButton.textContent = peer.displayName && peer.displayName !== 'Prism'
+? `${peer.displayName} (@${peer.username || userId})`
+: `@${peer.username || userId}`;
+chatButton.addEventListener('click', () => openPrivateChat(userId, peer));
+privateChatList.appendChild(chatButton);
+});
+}
+function openPrivateChat(userId, peer) {
+const id = String(userId || '').trim();
+if (!id || id === String(currentUser && currentUser.id)) return;
+if (peer) privateChatPeers.set(id, peer);
+openPrivateChats.add(id);
+targetSocketIdInput.value = id;
+currentMode = 'private';
+tabPrivate.classList.add('active');
+tabGlobal.classList.remove('active');
+dmTargetBar.classList.remove('hidden');
+updateRoomTitle();
+unreadPrivateSenders.delete(id);
+updateDmUnreadIndicator();
+cancelReplyState();
+renderPrivateChatList();
+loadThreadViewer();
+}
+function loadPrivateConversations() {
+socket.timeout(8000).emit('get private conversations', (error, response) => {
+if (error || !response || !response.success) {
+alert(response && response.message ? response.message : 'Could not load your saved private chats.');
+return;
+}
+response.conversations.forEach(conversation => {
+const peerId = String(conversation.user.id);
+privateChatPeers.set(peerId, conversation.user);
+openPrivateChats.add(peerId);
+messageCache.private[peerId] = conversation.messages.map(message => ({
+messageId: message.messageId,
+sender: message.user,
+username: message.username,
+userId: message.userId,
+pronouns: message.pronouns,
+role: message.role,
+avatarColor: message.avatarColor,
+avatarUrl: message.avatarImage,
+messageColor: message.messageColor,
+messageFont: message.messageFont,
+bio: message.bio,
+bannerColor: message.bannerColor,
+bannerImage: message.bannerImage,
+text: message.text,
+image: message.image || '',
+isMe: String(message.userId) === String(currentUser.id),
+replyTo: message.replyTo,
+timestamp: message.timestamp
+}));
+});
+renderPrivateChatList();
+loadThreadViewer();
+});
+}
+socket.on('update user lists', users => {
+onlineUsersById = new Map(Object.entries(users || {}).map(([sessionId, user]) => [String(user.id), { ...user, sessionId }]));
+onlineUserIds = new Set(onlineUsersById.keys());
+const ownOnlineUser = onlineUsersById.get(String(currentUser && currentUser.id));
+if (ownOnlineUser && currentUser) {
+currentUser.role = ownOnlineUser.role || currentUser.role;
+syncDashboardUI();
+}
+onlineUsersById.forEach((user, userId) => privateChatPeers.set(userId, user));
+renderDmRecipientList();
+renderOnlineUsers();
+renderPrivateChatList();
+mentionSuggestionUsers = [...onlineUsersById.entries()]
+.filter(([id]) => id !== String(currentUser && currentUser.id))
+.map(([id, user]) => ({ id, username: user.username, displayName: user.displayName || user.username }));
+if (currentUser) loadThreadViewer();
+if (currentUser && !friendsModal.classList.contains('hidden')) loadFriends();
+if (!userProfileModal.classList.contains('hidden') && viewedUserProfile) showUserProfile(viewedUserProfile);
+});
+socket.on('friend list updated', data => {
+if (!currentUser || String(currentUser.id) !== String(data.userId)) return;
+currentUser.friends = data.friends;
+if (!userProfileModal.classList.contains('hidden') && viewedUserProfile) {
+btnToggleFriend.textContent = currentUser.friends.includes(String(viewedUserProfile.id)) ? 'Remove friend' : 'Add friend';
+}
+if (!profileModal.classList.contains('hidden') || !friendsModal.classList.contains('hidden')) loadFriends();
+});
+togglePasswordVisibility.addEventListener('click', () => {
+const isPasswordVisible = passwordInput.type === 'text';
+passwordInput.type = isPasswordVisible ? 'password' : 'text';
+togglePasswordVisibility.setAttribute('aria-label', isPasswordVisible ? 'Show password' : 'Hide password');
+togglePasswordVisibility.setAttribute('aria-pressed', String(!isPasswordVisible));
+passwordEyeIcon.classList.toggle('password-visible', !isPasswordVisible);
+});
+function bindSecretCodeVisibility(button, input) {
+const eyeIcon = button.querySelector('.password-eye');
+button.addEventListener('click', () => {
+const isVisible = input.type === 'text';
+input.type = isVisible ? 'password' : 'text';
+button.setAttribute('aria-label', isVisible ? 'Show secret code' : 'Hide secret code');
+button.setAttribute('aria-pressed', String(!isVisible));
+eyeIcon.classList.toggle('password-visible', !isVisible);
+});
+}
+bindSecretCodeVisibility(toggleSecretCodeVisibility, secretCodeInput);
+bindSecretCodeVisibility(toggleRecoverySecretVisibility, recoverySecretCode);
+bindSecretCodeVisibility(toggleProfileRecoveryCodeVisibility, profileRecoveryCodeInput);
+toggleAuthMode.addEventListener('click', () => {
+isLoginMode = !isLoginMode;
+authTitle.textContent = isLoginMode ? "Welcome Back!" : "Create Your Chat Account";
+authDesc.textContent = isLoginMode ? "Log into your account to start chatting!" : "Choose a username and password to get your ID code!";
+btnSubmitLogin.textContent = isLoginMode ? "Log In" : "Create Account";
+toggleAuthMode.textContent = isLoginMode ? "Register" : "Log In";
+toggleAuthMode2.textContent = isLoginMode ? "Need an account?" : "Already have an account? ";
+btnForgetPassword.classList.toggle('hidden', !isLoginMode);
+secretCodeSetup.classList.toggle('hidden', isLoginMode);
+secretCodeInput.disabled = isLoginMode;
+secretCodeInput.required = !isLoginMode;
+secretCodeInput.value = '';
+});
+loginForm.addEventListener('submit', function() {
+const payload = { username: usernameInput.value.trim(), password: passwordInput.value };
+const eventName = isLoginMode ? 'login user' : 'register user';
+if (!isLoginMode) {
+if (secretCodeInput.value.trim().length < 4) {
+alert('Choose a secret code with at least 4 characters.');
+return;
+}
+payload.secretCode = secretCodeInput.value.trim();
+}
+socket.emit(eventName, payload, (res) => {
+if (res.success) {
+currentUser = res.user;
+onlineUserIds.add(String(currentUser.id));
+mySocketId = res.socketId;
+syncDashboardUI();
+loginScreen.classList.add('hidden');
+chatWindow.classList.remove('hidden');
+loadThreadViewer();
+loadPrivateConversations();
+} else { alert(res.message); }
+});
+});
+btnForgetPassword.addEventListener('click', () => {
+recoveryUsername.value = usernameInput.value.trim();
+recoverySecretCode.value = '';
+recoveryStatus.textContent = '';
+authMainView.classList.add('hidden');
+recoveryView.classList.remove('hidden');
+(recoveryUsername.value ? recoverySecretCode : recoveryUsername).focus();
+});
+btnBackToLogin.addEventListener('click', () => {
+pendingPasswordResetToken = '';
+recoveryView.classList.add('hidden');
+resetPasswordView.classList.add('hidden');
+authMainView.classList.remove('hidden');
+});
+recoveryForm.addEventListener('submit', event => {
+event.preventDefault();
+btnVerifyRecovery.disabled = true;
+recoveryStatus.textContent = 'Checking your secret code...';
+socket.timeout(10000).emit('verify recovery code', {
+username: recoveryUsername.value.trim(),
+secretCode: recoverySecretCode.value.trim()
+}, (error, response) => {
+btnVerifyRecovery.disabled = false;
+if (error || !response) {
+recoveryStatus.textContent = 'Could not verify your code. Check your connection and try again.';
+return;
+}
+if (!response.success) {
+recoveryStatus.textContent = response.message || 'Could not verify your secret code.';
+if (response.retryAfter) recoverySecretCode.value = '';
+return;
+}
+pendingPasswordResetToken = response.resetToken;
+recoveryView.classList.add('hidden');
+resetPasswordView.classList.remove('hidden');
+resetPasswordStatus.textContent = '';
+resetPasswordForm.reset();
+updatePasswordRequirement();
+newPasswordInput.focus();
+});
+});
+function updatePasswordRequirement() {
+const meetsLength = newPasswordInput.value.length >= 10;
+passwordLengthRequirement.classList.toggle('requirement-unmet', !meetsLength);
+}
+newPasswordInput.addEventListener('input', updatePasswordRequirement);
+resetPasswordForm.addEventListener('submit', event => {
+event.preventDefault();
+resetPasswordStatus.textContent = '';
+if (newPasswordInput.value.length < 10 || newPasswordInput.value.length > 128) {
+resetPasswordStatus.textContent = 'Your password must be between 10 and 128 characters.';
+return;
+}
+if (newPasswordInput.value !== confirmPasswordInput.value) {
+resetPasswordStatus.textContent = 'The passwords do not match.';
+confirmPasswordInput.focus();
+return;
+}
+if (!pendingPasswordResetToken) {
+resetPasswordStatus.textContent = 'Verify your secret code again to reset your password.';
+return;
+}
+btnResetPassword.disabled = true;
+resetPasswordStatus.textContent = 'Saving your new password...';
+socket.timeout(10000).emit('reset account password', {
+resetToken: pendingPasswordResetToken,
+password: newPasswordInput.value
+}, (error, response) => {
+btnResetPassword.disabled = false;
+if (error || !response || !response.success) {
+resetPasswordStatus.textContent = response && response.message
+? response.message
+: 'Could not reset your password. Check your connection and try again.';
+if (response && response.message && response.message.includes('expired')) pendingPasswordResetToken = '';
+return;
+}
+pendingPasswordResetToken = '';
+usernameInput.value = response.username;
+passwordInput.value = '';
+isLoginMode = true;
+authTitle.textContent = 'Welcome Back!';
+authDesc.textContent = 'Your password was reset. Log in with your new password.';
+btnSubmitLogin.textContent = 'Log In';
+toggleAuthMode.textContent = 'Register';
+toggleAuthMode2.textContent = 'Need an account?';
+btnForgetPassword.classList.remove('hidden');
+secretCodeSetup.classList.add('hidden');
+secretCodeInput.disabled = true;
+secretCodeInput.required = false;
+resetPasswordView.classList.add('hidden');
+authMainView.classList.remove('hidden');
+});
+});
+function syncDashboardUI() {
+updateRoomTitle();
+myIdDisplay.textContent = "Your Account ID: " + currentUser.id + " (" + currentUser.role + ")";
+mySocketDisplay.textContent = "Live Session ID: " + mySocketId;
+}
+function updateRoomTitle() {
+const peerId = targetSocketIdInput.value.trim();
+const peer = privateChatPeers.get(peerId) || onlineUsersById.get(peerId);
+roomTitle.textContent = currentMode === 'global'
+? '# Prism Chat'
+: peer ? `DM with ${peer.displayName || peer.username} (@${peer.username})` : peerId ? `DM with account ${peerId}` : "# DM's";
+}
+btnOpenProfile.addEventListener('click', () => {
+pendingAvatarImage = currentUser.avatarImage || currentUser.avatarUrl || '';
+avatarImageChanged = false;
+pendingBannerImage = currentUser.bannerImage || '';
+bannerImageChanged = false;
+profileAvatarFile.value = '';
+profileBannerFile.value = '';
+profileAvatarFileName.textContent = 'No image chosen';
+profileBannerFileName.textContent = 'No image chosen';
+profileDisplayName.value = currentUser.displayName || '';
+profilePronouns.value = currentUser.pronouns || '';
+profileBio.value = currentUser.bio || '';
+profileBannerColor.value = currentUser.bannerColor || '#84c5d0';
+profileSignedInAs.textContent = currentUser.username;
+profileSessionId.textContent = mySocketId;
+profileSaveStatus.textContent = '';
+profileRecoveryCodeInput.value = '';
+recoveryCodeSaveStatus.textContent = currentUser.hasRecoveryCode
+? 'A recovery code is saved. Enter a new one to replace it.'
+: 'No recovery code is set yet.';
+updateProfilePreview();
+profileModal.classList.remove('hidden');
+loadFriends();
+});
+btnSaveRecoveryCode.addEventListener('click', () => {
+const secretCode = profileRecoveryCodeInput.value.trim();
+if (secretCode.length < 4 || secretCode.length > 128) {
+recoveryCodeSaveStatus.textContent = 'Choose a secret code with 4 to 128 characters.';
+return;
+}
+btnSaveRecoveryCode.disabled = true;
+recoveryCodeSaveStatus.textContent = 'Saving recovery code...';
+socket.timeout(10000).emit('update recovery code', { secretCode }, (error, response) => {
+btnSaveRecoveryCode.disabled = false;
+if (error || !response || !response.success) {
+recoveryCodeSaveStatus.textContent = response && response.message
+? response.message
+: 'Could not save your recovery code. Check your connection and try again.';
+return;
+}
+currentUser.hasRecoveryCode = true;
+profileRecoveryCodeInput.value = '';
+recoveryCodeSaveStatus.textContent = 'Recovery code saved. Keep it somewhere safe.';
+});
+});
+btnOpenSettings.addEventListener('click', () => {
+darkThemeToggle.checked = document.documentElement.dataset.theme === 'dark';
+profileMessageFont.value = currentUser.messageFont || 'system-ui';
+profileMessageColor.value = currentUser.messageColor || '#202124';
+profileMessageSample.style.color = profileMessageColor.value;
+profileMessageSample.style.fontFamily = profileMessageFont.value;
+settingsSaveStatus.textContent = '';
+settingsModal.classList.remove('hidden');
+});
+btnCloseSettings.addEventListener('click', () => settingsModal.classList.add('hidden'));
+settingsModal.addEventListener('click', event => {
+if (event.target === settingsModal) settingsModal.classList.add('hidden');
+});
+darkThemeToggle.addEventListener('change', () => {
+const theme = darkThemeToggle.checked ? 'dark' : 'light';
+document.documentElement.dataset.theme = theme;
+localStorage.setItem('prism-theme', theme);
+settingsSaveStatus.textContent = `${theme === 'dark' ? 'Dark' : 'Light'} theme saved on this device.`;
+if (currentUser) loadThreadViewer();
+});
+profileMessageFont.addEventListener('change', () => {
+profileMessageSample.style.fontFamily = profileMessageFont.value;
+});
+profileMessageColor.addEventListener('input', () => {
+profileMessageSample.style.color = profileMessageColor.value;
+});
+btnSaveSettings.addEventListener('click', () => {
+btnSaveSettings.disabled = true;
+settingsSaveStatus.textContent = 'Saving settings...';
+socket.timeout(10000).emit('update profile parameters', {
+messageFont: profileMessageFont.value,
+messageColor: profileMessageColor.value
+}, (error, response) => {
+btnSaveSettings.disabled = false;
+if (error || !response || !response.success) {
+settingsSaveStatus.textContent = response && response.message ? response.message : 'Could not save your settings. Try again.';
+return;
+}
+currentUser = response.user;
+const updateOwnAppearance = messages => messages.forEach(message => {
+if (message.isMe) {
+message.messageColor = currentUser.messageColor || '#202124';
+message.messageFont = currentUser.messageFont || 'system-ui';
+}
+});
+updateOwnAppearance(messageCache.global);
+Object.values(messageCache.private).forEach(updateOwnAppearance);
+settingsSaveStatus.textContent = 'Settings saved.';
+loadThreadViewer();
+});
+});
+function updateProfilePreview() {
+if (profileSaveStatus.textContent !== 'Saving profile...') profileSaveStatus.textContent = '';
+const displayName = profileDisplayName.value.trim() || currentUser.displayName || currentUser.username;
+profilePreviewName.textContent = displayName;
+profilePreviewInitial.textContent = displayName.charAt(0).toUpperCase() || '?';
+profilePreviewPronouns.textContent = profilePronouns.value.trim();
+profilePreviewPronouns.classList.toggle('hidden', !profilePreviewPronouns.textContent);
+profilePreviewBio.textContent = profileBio.value.trim() || 'Add a bio to introduce yourself.';
+profilePreviewBanner.style.backgroundColor = profileBannerColor.value;
+profilePreviewBanner.style.backgroundImage = pendingBannerImage ? `url("${pendingBannerImage}")` : 'none';
+profilePreviewImage.classList.add('hidden');
+profilePreviewImage.removeAttribute('src');
+if (pendingAvatarImage) {
+profilePreviewImage.src = pendingAvatarImage;
+profilePreviewImage.classList.remove('hidden');
+}
+}
+profileDisplayName.addEventListener('input', updateProfilePreview);
+profilePronouns.addEventListener('input', updateProfilePreview);
+profileBio.addEventListener('input', updateProfilePreview);
+profileBannerColor.addEventListener('input', updateProfilePreview);
+profilePreviewImage.addEventListener('error', () => profilePreviewImage.classList.add('hidden'));
+profileAvatarFile.addEventListener('change', async () => {
+const file = profileAvatarFile.files[0];
+if (!file) return;
+profileAvatarFileName.textContent = file.name;
+await loadProfileImage(file, 128, 128, profileAvatarFile, value => {
+pendingAvatarImage = value;
+avatarImageChanged = true;
+updateProfilePreview();
+});
+});
+profileBannerFile.addEventListener('change', async () => {
+const file = profileBannerFile.files[0];
+if (!file) return;
+profileBannerFileName.textContent = file.name;
+await loadProfileImage(file, 640, 240, profileBannerFile, value => {
+pendingBannerImage = value;
+bannerImageChanged = true;
+updateProfilePreview();
+});
+});
+async function loadProfileImage(file, maxWidth, maxHeight, input, onLoaded) {
+if (!file.type.startsWith('image/')) {
+alert('Choose an image file.');
+input.value = '';
+if (input === profileAvatarFile) profileAvatarFileName.textContent = 'No image chosen';
+if (input === profileBannerFile) profileBannerFileName.textContent = 'No image chosen';
+return;
+}
+if (file.size > 5 * 1024 * 1024) {
+alert('Choose an image smaller than 5 MB.');
+input.value = '';
+if (input === profileAvatarFile) profileAvatarFileName.textContent = 'No image chosen';
+if (input === profileBannerFile) profileBannerFileName.textContent = 'No image chosen';
+return;
+}
+btnSaveProfile.disabled = true;
+try {
+onLoaded(await createProfileImage(file, maxWidth, maxHeight));
+} catch (error) {
+alert('Could not read that image. Please choose another file.');
+input.value = '';
+if (input === profileAvatarFile) profileAvatarFileName.textContent = 'No image chosen';
+if (input === profileBannerFile) profileBannerFileName.textContent = 'No image chosen';
+} finally {
+btnSaveProfile.disabled = false;
+}
+}
+function createProfileImage(file, maxWidth, maxHeight) {
+return new Promise((resolve, reject) => {
+const reader = new FileReader();
+reader.onerror = () => reject(new Error('Image file could not be read.'));
+reader.onload = () => {
+const image = new Image();
+image.onerror = () => reject(new Error('Image file could not be decoded.'));
+image.onload = () => {
+try {
+const canvas = document.createElement('canvas');
+const scale = Math.min(maxWidth / image.width, maxHeight / image.height, 1);
+let width = Math.max(1, Math.round(image.width * scale));
+let height = Math.max(1, Math.round(image.height * scale));
+let quality = 0.82;
+for (let attempt = 0; attempt < 8; attempt++) {
+canvas.width = width;
+canvas.height = height;
+const context = canvas.getContext('2d');
+if (!context) throw new Error('Canvas is unavailable.');
+context.fillStyle = '#ffffff';
+context.fillRect(0, 0, width, height);
+context.drawImage(image, 0, 0, width, height);
+const imageData = canvas.toDataURL('image/jpeg', quality);
+const base64 = imageData.substring(imageData.indexOf(',') + 1);
+const imageSize = Math.floor(base64.length * 3 / 4) - (base64.endsWith('==') ? 2 : base64.endsWith('=') ? 1 : 0);
+if (imageSize <= 180 * 1024) {
+resolve(imageData);
+return;
+}
+if (quality > 0.52) {
+quality -= 0.1;
+} else {
+width = Math.max(64, Math.floor(width * 0.8));
+height = Math.max(64, Math.floor(height * 0.8));
+quality = 0.82;
+}
+}
+reject(new Error('The image could not be compressed enough to upload.'));
+} catch (error) {
+reject(error);
+}
+};
+image.src = reader.result;
+};
+reader.readAsDataURL(file);
+});
+}
+btnCloseProfile.addEventListener('click', () => profileModal.classList.add('hidden'));
+btnSaveProfile.addEventListener('click', () => {
+const up = {
+displayName: profileDisplayName.value.trim(),
+pronouns: profilePronouns.value.trim(),
+bio: profileBio.value.trim(),
+bannerColor: profileBannerColor.value,
+avatarColor: profileBannerColor.value,
+avatarImage: avatarImageChanged ? pendingAvatarImage : undefined,
+bannerImage: bannerImageChanged ? pendingBannerImage : undefined
+};
+btnSaveProfile.disabled = true;
+profileSaveStatus.textContent = 'Saving profile...';
+socket.timeout(10000).emit('update profile parameters', up, (error, res) => {
+if (error) {
+profileSaveStatus.textContent = 'Could not save your profile. Check your connection and try again.';
+btnSaveProfile.disabled = false;
+return;
+}
+if (!res) {
+profileSaveStatus.textContent = 'The server returned an empty save response. Please try again.';
+btnSaveProfile.disabled = false;
+return;
+}
+if (res.success) {
+currentUser = res.user;
+const updateOwnAvatars = messages => messages.forEach(message => {
+if (message.isMe) {
+message.avatarColor = currentUser.avatarColor;
+message.avatarUrl = currentUser.avatarImage || currentUser.avatarUrl || '';
+message.sender = currentUser.displayName || currentUser.username;
+message.pronouns = currentUser.pronouns || '';
+message.messageColor = currentUser.messageColor || '#202124';
+message.messageFont = currentUser.messageFont || 'system-ui';
+}
+});
+updateOwnAvatars(messageCache.global);
+Object.values(messageCache.private).forEach(updateOwnAvatars);
+syncDashboardUI();
+pendingAvatarImage = currentUser.avatarImage || '';
+pendingBannerImage = currentUser.bannerImage || '';
+avatarImageChanged = false;
+bannerImageChanged = false;
+updateProfilePreview();
+profileSaveStatus.textContent = 'Profile saved.';
+loadThreadViewer();
+} else {
+profileSaveStatus.textContent = res.message || 'Could not save your profile.';
+}
+btnSaveProfile.disabled = false;
+});
+});
+btnSignOut.addEventListener('click', () => {
+socket.disconnect();
+window.location.reload();
+});
+btnPlusImage.addEventListener('click', () => messageImageFile.click());
+messageImageFile.addEventListener('change', async () => {
+const file = messageImageFile.files[0];
+if (!file) return;
+if (!file.type.startsWith('image/')) {
+alert('Choose an image file.');
+messageImageFile.value = '';
+return;
+}
+if (file.size > 5 * 1024 * 1024) {
+alert('Choose an image smaller than 5 MB.');
+messageImageFile.value = '';
+return;
+}
+btnSendMessage.disabled = true;
+try {
+pendingMessageImage = await createProfileImage(file, 640, 640);
+pendingImageThumbnail.src = pendingMessageImage;
+pendingImageName.textContent = file.name;
+pendingImagePreview.classList.remove('hidden');
+} catch (error) {
+alert('Could not read that image. Please choose another file.');
+messageImageFile.value = '';
+} finally {
+btnSendMessage.disabled = false;
+}
+});
+function clearPendingMessageImage() {
+pendingMessageImage = '';
+messageImageFile.value = '';
+pendingImageThumbnail.removeAttribute('src');
+pendingImageName.textContent = '';
+pendingImagePreview.classList.add('hidden');
+}
+btnRemovePendingImage.addEventListener('click', clearPendingMessageImage);
+function finishSendingMessage() {
+messageInput.value = '';
+clearPendingMessageImage();
+cancelReplyState();
+}
+async function copyText(value, successLabel) {
+if (!value) {
+userProfileStatus.textContent = 'There is no session ID to copy while this user is offline.';
+return;
+}
+try {
+await navigator.clipboard.writeText(value);
+profileSaveStatus.textContent = successLabel || 'Copied.';
+userProfileStatus.textContent = successLabel || 'Copied.';
+} catch (error) {
+alert('Could not copy to the clipboard. Select and copy the ID manually.');
+}
+}
+btnCopyOwnSession.addEventListener('click', () => copyText(mySocketId, 'Session ID copied.'));
+btnCloseUserProfile.addEventListener('click', () => userProfileModal.classList.add('hidden'));
+btnChooseDmRecipient.addEventListener('click', () => {
+renderDmRecipientList();
+dmRecipientModal.classList.remove('hidden');
+});
+btnCloseDmRecipient.addEventListener('click', () => dmRecipientModal.classList.add('hidden'));
+dmRecipientModal.addEventListener('click', event => {
+if (event.target === dmRecipientModal) dmRecipientModal.classList.add('hidden');
+});
+btnCopyUserSession.addEventListener('click', () => copyText(viewedUserProfile && viewedUserProfile.sessionId, 'Session ID copied.'));
+btnMessageUser.addEventListener('click', () => {
+if (!viewedUserProfile || !viewedUserProfile.id) {
+userProfileStatus.textContent = 'Could not identify this account.';
+return;
+}
+openPrivateChat(viewedUserProfile.id, viewedUserProfile);
+userProfileModal.classList.add('hidden');
+});
+btnToggleFriend.addEventListener('click', () => {
+if (!viewedUserProfile || !viewedUserProfile.id) return;
+const add = !((currentUser.friends || []).includes(String(viewedUserProfile.id)));
+socket.timeout(8000).emit('update friend', { userId: String(viewedUserProfile.id), add }, (error, response) => {
+if (error || !response || !response.success) {
+userProfileStatus.textContent = response && response.message ? response.message : 'Could not update your friend list. Try again.';
+return;
+}
+currentUser.friends = response.friends;
+btnToggleFriend.textContent = response.isFriend ? 'Remove friend' : 'Add friend';
+userProfileStatus.textContent = response.isFriend ? 'Added to your friends.' : 'Removed from your friends.';
+loadFriends();
+});
+});
+function showUserProfile(user) {
+viewedUserProfile = user;
+const online = onlineUsersById.get(String(user.id));
+viewedUserProfile.sessionId = online ? online.sessionId : '';
+userProfileName.textContent = user.displayName || user.sender || user.username || 'Prism';
+userProfileInitial.textContent = userProfileName.textContent.charAt(0).toUpperCase() || '?';
+userProfilePronouns.textContent = user.pronouns || '';
+userProfilePronouns.classList.toggle('hidden', !userProfilePronouns.textContent);
+userProfileBio.textContent = user.bio || 'No bio yet.';
+userProfileAccountId.textContent = user.id || 'Unknown';
+userProfileSessionId.textContent = online ? online.sessionId : 'Offline';
+userProfilePresence.classList.toggle('is-online', Boolean(online));
+userProfilePresence.classList.toggle('is-offline', !online);
+userProfilePresence.setAttribute('aria-label', online ? 'Online' : 'Offline');
+userProfilePresence.title = online ? 'Online' : 'Offline';
+userProfileBanner.style.backgroundColor = user.bannerColor || '#84c5d0';
+userProfileBanner.style.backgroundImage = user.bannerImage ? `url("${user.bannerImage}")` : 'none';
+userProfileAvatar.style.backgroundColor = user.avatarColor || '#98caff';
+userProfileImage.classList.add('hidden');
+userProfileImage.removeAttribute('src');
+const avatarImage = user.avatarImage || user.avatarUrl || '';
+if (avatarImage) {
+userProfileImage.src = avatarImage;
+userProfileImage.classList.remove('hidden');
+}
+btnToggleFriend.textContent = (currentUser.friends || []).includes(String(user.id)) ? 'Remove friend' : 'Add friend';
+btnToggleFriend.disabled = String(currentUser.id) === String(user.id);
+btnCopyUserSession.disabled = !online;
+btnMessageUser.disabled = String(user.id) === String(currentUser.id);
+userProfileStatus.textContent = online ? 'Online now.' : 'Offline. You can still message this account.';
+userRoleControls.classList.add('hidden');
+userRoleStatus.textContent = '';
+userProfileRoleSelect.replaceChildren();
+const mayManageRoles = currentUser && ['Owner', 'Admin'].includes(currentUser.role) &&
+    String(user.id) !== String(currentUser.id) && user.role !== 'Owner' &&
+    (currentUser.role === 'Owner' || user.role !== 'Admin');
+if (mayManageRoles) {
+const availableRoles = currentUser.role === 'Owner' ? ['Member', 'Moderator', 'Admin'] : ['Member', 'Moderator'];
+availableRoles.forEach(role => {
+const option = document.createElement('option');
+option.value = role;
+option.textContent = role;
+option.selected = (user.role || 'Member') === role;
+userProfileRoleSelect.appendChild(option);
+});
+userRoleControls.classList.remove('hidden');
+}
+userProfileModal.classList.remove('hidden');
+}
+btnSaveUserRole.addEventListener('click', () => {
+if (!viewedUserProfile) return;
+btnSaveUserRole.disabled = true;
+userRoleStatus.textContent = 'Saving role...';
+socket.timeout(8000).emit('change user role', {
+userId: String(viewedUserProfile.id),
+role: userProfileRoleSelect.value
+}, (error, response) => {
+btnSaveUserRole.disabled = false;
+if (error || !response || !response.success) {
+userRoleStatus.textContent = response && response.message ? response.message : 'Could not save this role.';
+return;
+}
+viewedUserProfile.role = response.role;
+userRoleStatus.textContent = `Role set to ${response.role}.`;
+});
+});
+function loadFriends() {
+profileFriendsStatus.textContent = 'Loading friends...';
+profileFriendsList.replaceChildren();
+friendsListStatus.textContent = 'Loading friends...';
+friendsList.replaceChildren();
+socket.timeout(8000).emit('get friends', (error, response) => {
+if (error || !response || !response.success) {
+const message = response && response.message ? response.message : 'Could not load friends.';
+profileFriendsStatus.textContent = message;
+friendsListStatus.textContent = message;
+return;
+}
+currentUser.friends = response.friends.map(friend => String(friend.id));
+const emptyMessage = 'No friends yet. Open someone’s profile to add them.';
+profileFriendsStatus.textContent = response.friends.length ? '' : emptyMessage;
+friendsListStatus.textContent = response.friends.length ? '' : emptyMessage;
+response.friends.forEach(friend => {
+const onlineUser = onlineUsersById.get(String(friend.id));
+const sessionId = onlineUser ? onlineUser.sessionId : friend.sessionId;
+for (const list of [profileFriendsList, friendsList]) {
+const friendButton = document.createElement('button');
+friendButton.type = 'button';
+friendButton.classList.add('profile-friend');
+const presence = document.createElement('span');
+presence.classList.add('friend-presence-dot', sessionId ? 'is-online' : 'is-offline');
+presence.setAttribute('role', 'img');
+presence.setAttribute('aria-label', sessionId ? 'Online' : 'Offline');
+const name = document.createElement('span');
+name.textContent = `${friend.displayName || friend.username} · ${sessionId ? 'Online' : 'Offline'}`;
+friendButton.append(presence, name);
+friendButton.addEventListener('click', () => {
+friendsModal.classList.add('hidden');
+profileModal.classList.add('hidden');
+showUserProfile(friend);
+});
+list.appendChild(friendButton);
+}
+});
+});
+}
+btnOpenFriends.addEventListener('click', () => {
+friendsModal.classList.remove('hidden');
+loadFriends();
+});
+btnCloseFriends.addEventListener('click', () => friendsModal.classList.add('hidden'));
+friendsModal.addEventListener('click', event => {
+if (event.target === friendsModal) friendsModal.classList.add('hidden');
+});
+tabGlobal.addEventListener('click', () => {
+currentMode = "global"; tabGlobal.classList.add('active'); tabPrivate.classList.remove('active'); dmTargetBar.classList.add('hidden');
+privateChatList.classList.add('hidden');
+updateRoomTitle();
+cancelReplyState(); loadThreadViewer();
+});
+tabPrivate.addEventListener('click', () => {
+currentMode = "private"; tabPrivate.classList.add('active'); tabGlobal.classList.remove('active'); dmTargetBar.classList.remove('hidden');
+updateRoomTitle();
+renderPrivateChatList();
+unreadPrivateSenders.delete(targetSocketIdInput.value.trim());
+updateDmUnreadIndicator();
+cancelReplyState(); loadThreadViewer();
+});
+function openDmFromInput() {
+const peerId = targetSocketIdInput.value.trim();
+if (!peerId) {
+alert('Enter the recipient account ID first.');
+return;
+}
+openPrivateChat(peerId, onlineUsersById.get(peerId) || privateChatPeers.get(peerId));
+}
+btnOpenDmById.addEventListener('click', openDmFromInput);
+targetSocketIdInput.addEventListener('keydown', event => {
+if (event.key === 'Enter') {
+event.preventDefault();
+openDmFromInput();
+}
+});
+messageInput.addEventListener('input', () => {
+const match = /(?:^|\s)@([^\s]*)$/.exec(messageInput.value);
+mentionSuggestions.replaceChildren();
+if (!match) {
+mentionSuggestions.classList.add('hidden');
+return;
+}
+const matches = mentionSuggestionUsers.filter(user => user.username.toLowerCase().startsWith(match[1].toLowerCase()));
+matches.forEach(user => {
+const option = document.createElement('button');
+option.type = 'button';
+option.classList.add('mention-suggestion');
+option.setAttribute('role', 'option');
+option.textContent = `${user.displayName} (@${user.username})`;
+option.addEventListener('mousedown', event => event.preventDefault());
+option.addEventListener('click', () => {
+const start = match.index + match[0].indexOf('@');
+const caret = messageInput.selectionStart;
+messageInput.value = messageInput.value.slice(0, start) + `@${user.username} ` + messageInput.value.slice(caret);
+mentionSuggestions.classList.add('hidden');
+messageInput.focus();
+});
+mentionSuggestions.appendChild(option);
+});
+mentionSuggestions.classList.toggle('hidden', matches.length === 0);
+});
+messageInput.addEventListener('keydown', event => {
+if (event.key === 'Escape') mentionSuggestions.classList.add('hidden');
+});
+chatForm.addEventListener('submit', function() {
+mentionSuggestions.classList.add('hidden');
+const messageText = messageInput.value.trim();
+if (messageText === '' && !pendingMessageImage) return;
+if (currentMode === "global") {
+socket.emit('global message', { text: messageText, image: pendingMessageImage, replyTo: activeReplyObject }, (response) => {
+if (response.success) {
+finishSendingMessage();
+} else {
+alert(response.message || 'Could not send your message.');
+}
+});
+} else {
+const targetId = targetSocketIdInput.value.trim();
+if (!targetId) { alert("Please choose a recipient account first!"); return; }
+socket.emit('private message', { targetId: targetId, text: messageText, image: pendingMessageImage, replyTo: activeReplyObject }, (response) => {
+if (response.success) {
+finishSendingMessage();
+} else { alert(response.message); }
+});
+}
+});
+socket.on('broadcast global message', function(data) {
+messageCache.global.push({ messageId: data.messageId, sender: data.user, username: data.username, userId: data.userId, pronouns: data.pronouns, role: data.role, avatarColor: data.avatarColor, avatarUrl: data.avatarImage || data.avatarUrl, messageColor: data.messageColor, messageFont: data.messageFont, bio: data.bio, bannerColor: data.bannerColor, bannerImage: data.bannerImage, text: data.text, image: data.image || '', isMe: data.senderId === mySocketId, replyTo: data.replyTo, timestamp: data.timestamp });
+if (currentMode === "global" && currentUser) loadThreadViewer();
+});
+socket.on('user joined', data => {
+if (!data || typeof data.username !== 'string' || !data.username.trim()) return;
+messageCache.global.push({ system: true, text: `${data.username} joined.`, timestamp: new Date().toISOString() });
+if (currentMode === 'global' && currentUser) loadThreadViewer();
+});
+socket.on('broadcast private message', function(data) {
+if (!currentUser) return;
+const peerId = String(data.userId) === String(currentUser.id)
+? String(data.conversationId).split(':').find(id => id !== String(currentUser.id))
+: String(data.userId);
+if (!peerId) return;
+if (String(data.userId) !== String(currentUser.id)) {
+privateChatPeers.set(peerId, {
+id: data.userId,
+username: data.username,
+displayName: data.user,
+role: data.role,
+avatarColor: data.avatarColor,
+avatarImage: data.avatarImage,
+pronouns: data.pronouns,
+bio: data.bio,
+bannerColor: data.bannerColor,
+bannerImage: data.bannerImage
+});
+} else if (data.recipient) {
+privateChatPeers.set(peerId, data.recipient);
+} else if (!privateChatPeers.has(peerId)) {
+privateChatPeers.set(peerId, onlineUsersById.get(peerId) || { id: peerId, username: peerId, displayName: `Account ${peerId}` });
+}
+openPrivateChats.add(peerId);
+if (!messageCache.private[peerId]) messageCache.private[peerId] = [];
+messageCache.private[peerId].push({ messageId: data.messageId, sender: data.user, username: data.username, userId: data.userId, pronouns: data.pronouns, role: data.role, avatarColor: data.avatarColor, avatarUrl: data.avatarImage || data.avatarUrl, messageColor: data.messageColor, messageFont: data.messageFont, bio: data.bio, bannerColor: data.bannerColor, bannerImage: data.bannerImage, text: data.text, image: data.image || '', isMe: String(data.userId) === String(currentUser.id), replyTo: data.replyTo, timestamp: data.timestamp });
+renderPrivateChatList();
+if (currentMode === "private" && targetSocketIdInput.value.trim() === peerId) {
+unreadPrivateSenders.delete(peerId);
+loadThreadViewer();
+} else if (String(data.userId) !== String(currentUser.id)) {
+unreadPrivateSenders.add(peerId);
+updateDmUnreadIndicator();
+}
+});
+socket.on('delete chat message', data => {
+if (data.mode === 'global') messageCache.global = messageCache.global.filter(message => message.messageId !== data.messageId);
+Object.keys(messageCache.private).forEach(id => {
+messageCache.private[id] = messageCache.private[id].filter(message => message.messageId !== data.messageId);
+});
+loadThreadViewer();
+});
+function initiateReplyState(user, text, image, userId, messageId) {
+const repliedMessage = messageId && document.getElementById('message-' + messageId);
+const repliedAvatar = repliedMessage && repliedMessage.querySelector('.message-avatar-image');
+activeReplyObject = { user: user, text: text, image: image || '', userId: userId || '', avatarImage: repliedAvatar && repliedAvatar.src.startsWith('data:image/jpeg;base64,') ? repliedAvatar.src : '', messageId: messageId || '' };
+const preview = text.trim() || (image ? 'Image' : 'Message');
+replyBannerText.textContent = 'Replying to @' + user + ': "' + preview.substring(0, 25) + (preview.length > 25 ? '...' : '') + '"';
+replyBanner.classList.remove('hidden'); messageInput.focus();
+}
+btnCancelReply.addEventListener('click', cancelReplyState);
+function cancelReplyState() { activeReplyObject = null; replyBanner.classList.add('hidden'); }
+function loadThreadViewer() {
+if (!currentUser) return;
+chatMessages.innerHTML = '';
+if (currentMode === "global") {
+messageCache.global.forEach(msg => {
+if (msg.system) return appendSystemMessage(msg.text);
+appendMessageDOM(msg.sender, msg.pronouns, msg.role, msg.avatarColor, msg.avatarUrl, msg.text, msg.image, msg.isMe, msg.replyTo, msg.timestamp, msg.userId, msg.messageId, msg.messageFont, msg.messageColor, msg.username, msg.bio, msg.bannerColor, msg.bannerImage);
+});
+} else {
+const targetId = targetSocketIdInput.value.trim();
+if (targetId && messageCache.private[targetId]) {
+messageCache.private[targetId].forEach(msg => appendMessageDOM(msg.sender, msg.pronouns, msg.role, msg.avatarColor, msg.avatarUrl, msg.text, msg.image, msg.isMe, msg.replyTo, msg.timestamp, msg.userId, msg.messageId, msg.messageFont, msg.messageColor, msg.username, msg.bio, msg.bannerColor, msg.bannerImage));
+} else if (!targetId) {
+chatMessages.textContent = 'Choose a person or enter their account ID above to view the conversation.';
+}
+}
+chatMessages.scrollTop = chatMessages.scrollHeight;
+}
+function appendSystemMessage(text) {
+const event = document.createElement('div');
+event.classList.add('chat-system-event');
+event.textContent = text;
+chatMessages.appendChild(event);
+}
+function appendMessageDOM(sender, pronouns, role, avatarColor, avatarUrl, text, image, isMe, replyTo, timestampValue, userId, messageId, messageFont, messageColor, username, bio, bannerColor, bannerImage) {
+const senderName = typeof sender === 'string' && sender.trim() ? sender.trim() : 'Prism';
+const container = document.createElement('div');
+container.classList.add('message-row', isMe ? 'sent' : 'received');
+container.style.width = "100%";
+if (messageId) container.id = 'message-' + messageId;
+const messageDiv = document.createElement('div');
+messageDiv.classList.add('message');
+const avatar = document.createElement('span');
+avatar.classList.add('message-avatar');
+avatar.style.backgroundColor = avatarColor || '#98caff';
+const initials = document.createElement('span');
+initials.classList.add('message-avatar-initials');
+initials.textContent = senderName.charAt(0).toUpperCase() || '?';
+avatar.appendChild(initials);
+if (avatarUrl) {
+const avatarImage = document.createElement('img');
+avatarImage.classList.add('message-avatar-image');
+avatarImage.src = avatarUrl;
+avatarImage.alt = '';
+avatarImage.addEventListener('load', () => initials.classList.add('hidden'), { once: true });
+avatarImage.addEventListener('error', () => avatarImage.remove(), { once: true });
+avatar.prepend(avatarImage);
+}
+const presenceDot = document.createElement('span');
+const isOnline = isMe || onlineUserIds.has(String(userId || ''));
+presenceDot.classList.add('presence-dot', isOnline ? 'is-online' : 'is-offline');
+presenceDot.setAttribute('role', 'img');
+presenceDot.setAttribute('aria-label', isOnline ? 'Online' : 'Offline');
+presenceDot.title = isOnline ? 'Online' : 'Offline';
+avatar.appendChild(presenceDot);
+avatar.classList.add('message-profile-trigger');
+avatar.setAttribute('role', 'button');
+avatar.setAttribute('tabindex', '0');
+const profileDetails = {
+id: userId,
+username: username || senderName,
+displayName: senderName,
+pronouns,
+role,
+avatarColor,
+avatarImage: avatarUrl,
+bio: bio || '',
+bannerColor: bannerColor || '#84c5d0',
+bannerImage: bannerImage || ''
+};
+const openProfile = event => {
+event.stopPropagation();
+showUserProfile(profileDetails);
+};
+avatar.addEventListener('click', openProfile);
+avatar.addEventListener('keydown', event => {
+if (event.key === 'Enter' || event.key === ' ') openProfile(event);
+});
+container.appendChild(avatar);
+if (replyTo) {
+const replyPreview = document.createElement('button');
+replyPreview.type = 'button';
+replyPreview.classList.add('reply-context-line');
+replyPreview.setAttribute('aria-label', 'View the message from ' + replyTo.user + ' that this message replies to');
+const connector = document.createElement('span');
+connector.classList.add('reply-context-connector');
+connector.setAttribute('aria-hidden', 'true');
+const replyContent = document.createElement('span');
+replyContent.classList.add('reply-context-body');
+const replyArrow = document.createElement('span');
+replyArrow.classList.add('reply-context-arrow');
+replyArrow.textContent = '↶';
+const replyAuthor = document.createElement('span');
+replyAuthor.classList.add('reply-context-user');
+replyAuthor.textContent = '@' + replyTo.user;
+const replyText = document.createElement('span');
+replyText.classList.add('reply-context-text');
+replyText.textContent = replyTo.text.trim() || (replyTo.image ? 'Image' : 'Message');
+if (replyTo.avatarImage) {
+const quoteAvatar = document.createElement('img');
+quoteAvatar.classList.add('reply-context-avatar');
+quoteAvatar.src = replyTo.avatarImage;
+quoteAvatar.alt = '';
+replyPreview.append(connector, quoteAvatar);
+} else {
+replyPreview.appendChild(connector);
+}
+replyContent.append(replyArrow, replyAuthor, replyText);
+replyPreview.appendChild(replyContent);
+if (replyTo.image) {
+const replyImage = document.createElement('img');
+replyImage.classList.add('reply-context-image');
+replyImage.src = replyTo.image;
+replyImage.alt = 'Replied-to image';
+replyPreview.appendChild(replyImage);
+}
+replyPreview.addEventListener('click', event => {
+event.stopPropagation();
+const originalMessage = replyTo.messageId && document.getElementById('message-' + replyTo.messageId);
+if (!originalMessage) return;
+originalMessage.scrollIntoView({ behavior: 'smooth', block: 'center' });
+originalMessage.classList.add('message-highlight');
+setTimeout(() => originalMessage.classList.remove('message-highlight'), 1400);
+});
+messageDiv.appendChild(replyPreview);
+}
+const mentionPattern = new RegExp("@" + currentUser.username.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "(?![a-zA-Z0-9_])", 'i');
+if (mentionPattern.test(text)) messageDiv.classList.add('pinged-msg');
+const messageHeader = document.createElement('div');
+messageHeader.classList.add('message-header');
+const senderLabel = document.createElement('span');
+senderLabel.classList.add('username');
+senderLabel.textContent = senderName;
+senderLabel.classList.add('message-profile-trigger');
+senderLabel.setAttribute('role', 'button');
+senderLabel.setAttribute('tabindex', '0');
+senderLabel.addEventListener('click', openProfile);
+senderLabel.addEventListener('keydown', event => {
+if (event.key === 'Enter' || event.key === ' ') openProfile(event);
+});
+messageHeader.appendChild(senderLabel);
+if (username && username !== senderName) {
+const usernameHandle = document.createElement('span');
+usernameHandle.classList.add('username-handle');
+usernameHandle.textContent = '@' + username;
+messageHeader.appendChild(usernameHandle);
+}
+if (pronouns) {
+const pronounsLabel = document.createElement('span');
+pronounsLabel.classList.add('user-pronouns');
+pronounsLabel.textContent = pronouns;
+messageHeader.appendChild(pronounsLabel);
+}
+if (role && role !== "Member") {
+const roleBadge = document.createElement('span');
+roleBadge.classList.add('role-badge');
+const roleClass = `role-${role.toLowerCase()}`;
+if (['role-owner', 'role-admin', 'role-moderator'].includes(roleClass)) roleBadge.classList.add(roleClass);
+roleBadge.textContent = role;
+messageHeader.appendChild(roleBadge);
+}
+const timestamp = document.createElement('time');
+timestamp.classList.add('msg-timestamp');
+const messageDate = new Date(timestampValue || Date.now());
+timestamp.textContent = new Intl.DateTimeFormat(undefined, { hour: 'numeric', minute: '2-digit' }).format(messageDate);
+timestamp.dateTime = messageDate.toISOString();
+timestamp.title = new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeStyle: 'short' }).format(messageDate);
+messageHeader.appendChild(timestamp);
+const messageText = document.createElement('div');
+messageText.classList.add('message-text');
+messageText.textContent = text;
+const effectiveMessageColor = document.documentElement.dataset.theme === 'dark' && /^#202124$/i.test(messageColor || '')
+? '#e5eaf2'
+: messageColor;
+messageText.style.color = /^#[0-9a-f]{6}$/i.test(effectiveMessageColor || '') ? effectiveMessageColor : '#202124';
+messageText.style.fontFamily = ['system-ui', 'Arial', 'Georgia', 'monospace', 'cursive'].includes(messageFont) ? messageFont : 'system-ui';
+messageDiv.append(messageHeader, messageText);
+if (image) {
+const messageImage = document.createElement('img');
+messageImage.classList.add('chat-message-image');
+messageImage.src = image;
+messageImage.alt = 'Image sent in chat';
+messageImage.loading = 'lazy';
+messageImage.tabIndex = 0;
+messageImage.setAttribute('role', 'button');
+messageImage.setAttribute('aria-label', 'Enlarge image');
+const openImage = event => {
+event.stopPropagation();
+imageViewerTrigger = messageImage;
+imageViewerContent.src = image;
+imageViewer.classList.remove('hidden');
+btnCloseImageViewer.focus();
+};
+messageImage.addEventListener('click', openImage);
+messageImage.addEventListener('dblclick', event => event.stopPropagation());
+messageImage.addEventListener('keydown', event => {
+if (event.key === 'Enter' || event.key === ' ') {
+event.preventDefault();
+openImage(event);
+}
+});
+messageImage.addEventListener('error', () => messageImage.remove(), { once: true });
+messageDiv.appendChild(messageImage);
+}
+messageDiv.addEventListener('dblclick', () => initiateReplyState(senderName, text, image, userId, messageId));
+messageDiv.addEventListener('contextmenu', event => event.preventDefault());
+container.appendChild(messageDiv);
+const messageActions = document.createElement('div');
+messageActions.classList.add('message-actions');
+const copyButton = document.createElement('button');
+copyButton.type = 'button';
+copyButton.classList.add('message-action-button');
+copyButton.setAttribute('aria-label', 'Copy message');
+copyButton.title = 'Copy message';
+copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="24px" width="24px" fill="#59636f" aria-hidden="true"><path d="M9,18q-0.82,0-1.41-0.59T7,16V4Q7,3.17 7.59,2.59T9,2h9q0.82,0 1.41,0.59T20,4V16q0,0.82-0.59,1.41T18,18H9Zm0-2h9V4H9V16ZM5,22q-0.83,0-1.41-0.59T3,20V6H5V20H16v2H5Zm4-6V4V16Z"></path></svg>';
+copyButton.addEventListener('click', async event => {
+event.stopPropagation();
+try {
+await navigator.clipboard.writeText(text || (image ? 'Image attachment' : ''));
+copyButton.title = 'Copied';
+setTimeout(() => { copyButton.title = 'Copy message'; }, 1200);
+} catch (error) {
+alert('Could not copy this message. Try selecting its text and copying manually.');
+}
+});
+messageActions.appendChild(copyButton);
+const replyButton = document.createElement('button');
+replyButton.type = 'button';
+replyButton.classList.add('message-action-button');
+replyButton.setAttribute('aria-label', 'Reply to message');
+replyButton.title = 'Reply';
+replyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="24px" width="24px" fill="#59636f" aria-hidden="true"><path d="M19 19V15c0-1.66-1.34-3-3-3H6.83l3.6 3.6L9 17l-6-6 6-6 1.43 1.4-3.6 3.6H16c2.76 0 5 2.24 5 5v4h-2Z"></path></svg>';
+replyButton.addEventListener('click', event => {
+event.stopPropagation();
+initiateReplyState(senderName, text, image, userId, messageId);
+});
+messageActions.appendChild(replyButton);
+if (isMe || currentUser.role === 'Owner') {
+const deleteButton = document.createElement('button');
+deleteButton.type = 'button';
+deleteButton.classList.add('message-action-button', 'message-delete-button');
+deleteButton.setAttribute('aria-label', 'Delete message');
+deleteButton.title = currentUser.role === 'Owner' && !isMe ? 'Delete this message (owner)' : 'Delete message';
+deleteButton.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true"></i>';
+deleteButton.addEventListener('click', event => {
+event.stopPropagation();
+if (!window.confirm('Are you sure you want to delete this message?')) return;
+deleteButton.disabled = true;
+socket.timeout(8000).emit('delete chat message', { messageId }, (error, response) => {
+deleteButton.disabled = false;
+if (error || !response || !response.success) {
+alert(response && response.message ? response.message : 'Could not delete the message. Try again.');
+}
+});
+});
+messageActions.appendChild(deleteButton);
+}
+container.appendChild(messageActions);
+chatMessages.appendChild(container);
+}
+function closeImageViewer() {
+imageViewer.classList.add('hidden');
+imageViewerContent.removeAttribute('src');
+if (imageViewerTrigger && imageViewerTrigger.isConnected) imageViewerTrigger.focus();
+imageViewerTrigger = null;
+}
+btnCloseImageViewer.addEventListener('click', closeImageViewer);
+imageViewer.addEventListener('click', event => {
+if (event.target === imageViewer) closeImageViewer();
+});
+document.addEventListener('keydown', event => {
+if (event.key === 'Escape' && !imageViewer.classList.contains('hidden')) closeImageViewer();
+if (event.key === 'Escape') dmRecipientModal.classList.add('hidden');
+if (event.key === 'Escape') friendsModal.classList.add('hidden');
+if (event.key === 'Escape') settingsModal.classList.add('hidden');
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,150 @@
+{
+  "users": [
+    {
+      "username": "justniaa",
+      "password": "owna0713",
+      "id": "1002",
+      "role": "Owner",
+      "displayName": "justniaa",
+      "avatarColor": "#134a66",
+      "avatarImage": "data:image/jpeg;base64,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",
+      "pronouns": "she/her",
+      "bio": "I'm the owner of this chat room and the Prism browser.",
+      "bannerColor": "#134a66",
+      "bannerImage": "",
+      "avatarUrl": "",
+      "friends": [
+        "1003"
+      ],
+      "messageColor": "#202124",
+      "messageFont": "monospace",
+      "secretCodeSalt": "4ed3ed163b3d8fbc9bcce52434e5cdbb",
+      "secretCodeHash": "e7af36e7895af876f1b9142f03a33051795c53168b951f1c40925f256141c4a6b3f19a660262239e2eda96a046edf6b3026138cc5e74f089a786962336428764"
+    },
+    {
+      "username": "nia",
+      "password": "owna0713",
+      "id": "1003",
+      "role": "Admin",
+      "displayName": "nia",
+      "avatarColor": "#84c5d0",
+      "avatarImage": "",
+      "pronouns": "she/her",
+      "bio": "This account is for testing the chat. Please do not message.",
+      "bannerColor": "#84c5d0",
+      "bannerImage": "",
+      "friends": [
+        "1002"
+      ],
+      "messageColor": "#202124",
+      "messageFont": "cursive",
+      "avatarUrl": ""
+    },
+    {
+      "username": "niaa",
+      "password": "owna0713",
+      "id": "1004",
+      "role": "Admin",
+      "displayName": "niaa",
+      "avatarColor": "#84c5d0",
+      "avatarImage": "",
+      "pronouns": "she/her",
+      "bio": "This account is for testing the chat. Please do not message.",
+      "bannerColor": "#84c5d0",
+      "bannerImage": "",
+      "friends": [
+        "1002",
+        "1003"
+      ],
+      "messageColor": "#202124",
+      "messageFont": "cursive",
+      "avatarUrl": ""
+    }
+  ],
+  "servers": [],
+  "globalMessages": {
+    "general": []
+  },
+  "privateMessages": {
+    "1002:1003": [
+      {
+        "messageId": "0531a5a2-d12c-4056-af0b-f2dc47008d1f",
+        "conversationId": "1002:1003",
+        "senderId": "1003",
+        "recipient": {
+          "id": "1002",
+          "username": "justniaa",
+          "displayName": "justniaa"
+        },
+        "userId": "1003",
+        "user": "nia",
+        "username": "nia",
+        "pronouns": "she/her",
+        "role": "Admin",
+        "avatarColor": "#84c5d0",
+        "avatarImage": "",
+        "bio": "This account is for testing the chat. Please do not message me.",
+        "bannerColor": "#84c5d0",
+        "bannerImage": "",
+        "messageColor": "#202124",
+        "messageFont": "cursive",
+        "text": "hi",
+        "image": "",
+        "replyTo": null,
+        "timestamp": "2026-11-11T02:42:48.199Z"
+      },
+      {
+        "messageId": "e3f3cd35-ff9a-4b4c-8c28-ad46f1642129",
+        "conversationId": "1002:1003",
+        "senderId": "1002",
+        "recipient": {
+          "id": "1003",
+          "username": "nia",
+          "displayName": "nia"
+        },
+        "userId": "1002",
+        "user": "justniaa",
+        "username": "justniaa",
+        "pronouns": "she/her",
+        "role": "Owner",
+        "avatarColor": "#134a66",
+        "avatarImage": "data:image/jpeg;base64,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",
+        "bio": "I'm the owner of this chat room and the Prism browser.",
+        "bannerColor": "#134a66",
+        "bannerImage": "",
+        "messageColor": "#202124",
+        "messageFont": "monospace",
+        "text": "hi",
+        "image": "",
+        "replyTo": null,
+        "timestamp": "2026-11-11T02:42:56.327Z"
+      },
+      {
+        "messageId": "4abc720c-12c1-491f-96d7-42b02d7b0253",
+        "conversationId": "1002:1003",
+        "senderId": "1003",
+        "recipient": {
+          "id": "1002",
+          "username": "justniaa",
+          "displayName": "justniaa"
+        },
+        "userId": "1003",
+        "user": "nia",
+        "username": "nia",
+        "pronouns": "she/her",
+        "role": "Admin",
+        "avatarColor": "#84c5d0",
+        "avatarImage": "",
+        "bio": "This account is for testing the chat. Please do not message me.",
+        "bannerColor": "#84c5d0",
+        "bannerImage": "",
+        "messageColor": "#202124",
+        "messageFont": "cursive",
+        "text": "hi?",
+        "image": "",
+        "replyTo": null,
+        "timestamp": "2026-11-11T02:43:06.340Z"
+      }
+    ]
+  }
+}
