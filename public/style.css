@@ -59,11 +59,9 @@
             padding: 8px;
             border: 0;
             background: transparent !important;
-            color: #85abd0 !important;
+            color: #1762c4 !important;
             font-size: 0.9rem !important;
             cursor: pointer;
-            text-align: end;
-            padding: 6px 0 !important;
         }
 
         .auth-flow-card {
@@ -229,7 +227,7 @@
             border-radius: 8px;
             font-size: 1rem;
             cursor: pointer;
-            /* margin-top: 30px; */
+            margin-top: 30px;
             align-self: center;
         }
 
@@ -1106,6 +1104,61 @@
 
         .friends-panel {
             max-height: min(80vh, 640px);
+            overflow-y: auto;
+        }
+
+        .friend-requests-section {
+            margin: 14px 0;
+        }
+
+        .friend-requests-section .profile-section-title {
+            margin-bottom: 6px;
+        }
+
+        .friend-request-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .friend-request-row .profile-friend {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .friend-request-row .profile-action-btn {
+            margin: 0;
+            white-space: nowrap;
+        }
+
+        .add-friend-by-id-form {
+            margin-bottom: 12px;
+        }
+
+        .add-friend-by-id-form label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .add-friend-by-id-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .add-friend-by-id-controls input {
+            min-width: 0;
+            flex: 1;
+            padding: 9px 10px;
+            border: 1px solid #d5dce5;
+            border-radius: 7px;
+            background: #fff;
+            color: #243142;
+            font: inherit;
+        }
+
+        .add-friend-by-id-controls .profile-action-btn {
+            margin: 0;
         }
 
         .profile-friend:hover {
@@ -1554,7 +1607,8 @@ html[data-theme="dark"] .profile-panel {
 
 html[data-theme="dark"] .profile-panel-header h2,
 html[data-theme="dark"] .profile-section-title,
-html[data-theme="dark"] .profile-fields label {
+html[data-theme="dark"] .profile-fields label,
+html[data-theme="dark"] .add-friend-by-id-form label {
     color: #9dccff;
 }
 
@@ -1574,7 +1628,8 @@ html[data-theme="dark"] .profile-intro code {
 
 html[data-theme="dark"] .profile-section-title,
 html[data-theme="dark"] .profile-settings-title,
-html[data-theme="dark"] .profile-friends-section {
+html[data-theme="dark"] .profile-friends-section,
+html[data-theme="dark"] .friend-requests-section {
     border-color: #35465b;
 }
 
@@ -1599,67 +1654,10 @@ html[data-theme="dark"] .profile-action-btn {
     color: #eef5ff;
 }
 
-html[data-theme="dark"] .profile-file-button {
-    border-color: #56667b;
-    background: #253448;
+html[data-theme="dark"] .add-friend-by-id-controls input {
+    border-color: #405b78;
+    background: #1e2d40;
     color: #eef5ff;
 }
 
-html[data-theme="dark"] .message-actions {
-    border-color: #3a485a;
-    background: #182638;
-}
-
-html[data-theme="dark"] .message-action-button:hover,
-html[data-theme="dark"] .message-action-button:focus-visible {
-    background: #2b3c52;
-    color: #eaf3ff;
-}
-
-html[data-theme="dark"] .theme-settings {
-    border-color: #35465b;
-}
-
-.theme-settings {
-    margin-bottom: 18px;
-    padding-bottom: 14px;
-    border-bottom: 1px solid #e2e6eb;
-}
-
-.theme-toggle-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    color: #243142;
-    font-size: 0.9rem;
-}
-
-.theme-toggle-row input[type="checkbox"] {
-    width: 20px;
-    height: 20px;
-    accent-color: #247bd1;
-    cursor: pointer;
-}
-
-.theme-settings-hint {
-    margin-top: 6px;
-    color: #687789;
-    font-size: 0.78rem;
-}
-
-html[data-theme="dark"] .theme-toggle-row,
-html[data-theme="dark"] .theme-settings-hint {
-    color: #c3cfde;
-}
-
-html[data-theme="dark"] .profile-fields input:not([type="file"]),
-html[data-theme="dark"] .profile-fields textarea {
-    border-color: #46566c;
-    background: #1b293b;
-    color: #eef4fc;
-}
-
-html[data-theme="dark"] .profile-field-hint {
-    color: #bdc9d8;
-}
+h
