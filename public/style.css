@@ -875,37 +875,38 @@
             flex-shrink: 0;
             border: none;
             transition: background 0.2s;
-            margin-right: 17px;
-            /* position: absolute; */
-            border-bottom-right-radius: 0px;
-            border-top-right-radius: 0px;
+            border-radius: 8px;
         }
         
 
         .chat-input-area input {
-            position: absolute;
             flex: 1;
+            min-width: 0;
             padding: 12px;
-            width: 94.5%;
-            justify-self: center;
-            right: 12px;
-            border-bottom-left-radius: 0px;
-            border-top-left-radius: 0px;
+            width: auto;
+            position: static;
+            border-radius: 8px;
         }
 
         .chat-input-area button[type="submit"] {
             background: none;
             color: white;
             border: none;
-            padding: 10px 21px;
+            padding: 10px;
             height: 42px;
+            width: 42px;
             border-radius: 8px;
             cursor: pointer;
             font-size: 1rem;
             flex-shrink: 0;
-            justify-self: flex-start;
-            right: 12px;
-            position: absolute;
+            position: static;
+        }
+
+        .chat-input-area button[type="submit"] svg {
+            display: block;
+            width: 22px;
+            height: 22px;
+            margin: auto;
         }
 
         .res-wrap {
@@ -1225,6 +1226,12 @@
         .profile-fields input[type="color"] {
             height: 42px;
             padding: 5px;
+        }
+
+        .profile-field-hint {
+            margin-top: -5px;
+            color: #687789;
+            font-size: 0.78rem;
         }
 
         .profile-file-control {
@@ -1649,4 +1656,8 @@ html[data-theme="dark"] .profile-fields textarea {
     border-color: #46566c;
     background: #1b293b;
     color: #eef4fc;
+}
+
+html[data-theme="dark"] .profile-field-hint {
+    color: #bdc9d8;
 }
