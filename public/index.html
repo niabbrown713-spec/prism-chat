@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -199,6 +199,9 @@
                     <label class="profile-file-button" for="profileAvatarFile">Choose image</label>
                     <span id="profileAvatarFileName" class="profile-file-name">No image chosen</span>
                 </div>
+                <label for="profileAvatarColor">Profile picture fallback color</label>
+                <input type="color" id="profileAvatarColor" value="#98caff">
+                <small class="profile-field-hint">Used behind your initials when you don't have a profile picture.</small>
                 <label for="profileBannerColor">Banner color</label>
                 <input type="color" id="profileBannerColor" value="#84c5d0">
                 <label for="profileBannerFile">Or use a banner image</label>
@@ -429,6 +432,7 @@ const profileBannerFileName = document.getElementById('profileBannerFileName');
 const profileDisplayName = document.getElementById('profileDisplayName');
 const profilePronouns = document.getElementById('profilePronouns');
 const profileBio = document.getElementById('profileBio');
+const profileAvatarColor = document.getElementById('profileAvatarColor');
 const profileBannerColor = document.getElementById('profileBannerColor');
 const profileSignedInAs = document.getElementById('profileSignedInAs');
 const profilePreviewBanner = document.getElementById('profilePreviewBanner');
@@ -821,6 +825,7 @@ profileBannerFileName.textContent = 'No image chosen';
 profileDisplayName.value = currentUser.displayName || '';
 profilePronouns.value = currentUser.pronouns || '';
 profileBio.value = currentUser.bio || '';
+profileAvatarColor.value = currentUser.avatarColor || '#98caff';
 profileBannerColor.value = currentUser.bannerColor || '#84c5d0';
 profileSignedInAs.textContent = currentUser.username;
 profileSessionId.textContent = mySocketId;
@@ -910,6 +915,7 @@ if (profileSaveStatus.textContent !== 'Saving profile...') profileSaveStatus.tex
 const displayName = profileDisplayName.value.trim() || currentUser.displayName || currentUser.username;
 profilePreviewName.textContent = displayName;
 profilePreviewInitial.textContent = displayName.charAt(0).toUpperCase() || '?';
+profilePreviewAvatar.style.backgroundColor = profileAvatarColor.value;
 profilePreviewPronouns.textContent = profilePronouns.value.trim();
 profilePreviewPronouns.classList.toggle('hidden', !profilePreviewPronouns.textContent);
 profilePreviewBio.textContent = profileBio.value.trim() || 'Add a bio to introduce yourself.';
@@ -925,6 +931,7 @@ profilePreviewImage.classList.remove('hidden');
 profileDisplayName.addEventListener('input', updateProfilePreview);
 profilePronouns.addEventListener('input', updateProfilePreview);
 profileBio.addEventListener('input', updateProfilePreview);
+profileAvatarColor.addEventListener('input', updateProfilePreview);
 profileBannerColor.addEventListener('input', updateProfilePreview);
 profilePreviewImage.addEventListener('error', () => profilePreviewImage.classList.add('hidden'));
 profileAvatarFile.addEventListener('change', async () => {
@@ -1028,7 +1035,7 @@ displayName: profileDisplayName.value.trim(),
 pronouns: profilePronouns.value.trim(),
 bio: profileBio.value.trim(),
 bannerColor: profileBannerColor.value,
-avatarColor: profileBannerColor.value,
+avatarColor: profileAvatarColor.value,
 avatarImage: avatarImageChanged ? pendingAvatarImage : undefined,
 bannerImage: bannerImageChanged ? pendingBannerImage : undefined
 };
