@@ -678,3 +678,11 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         if (onlineUsers[socket.id]) {
+            delete onlineUsers[socket.id];
+            io.emit('update user lists', onlineUsers);
+        }
+    });
+});
+
+const PORT = Number(process.env.PORT) || 3009;
+server.listen(PORT, () => console.log(`Server executing successfully on port ${PORT}`));
