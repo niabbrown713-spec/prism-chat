@@ -336,9 +336,6 @@
                 <h2 id="friendsTitle">Friends</h2>
                 <button type="button" id="btnCloseFriends" class="profile-close-btn" aria-label="Close friends">×</button>
             </header>
-                <h3 class="profile-section-title">Your friends</h3>
-                <p id="friendsListStatus" class="profile-friends-status" role="status" aria-live="polite">Loading friends...</p>
-                <div id="friendsList" class="profile-friends-list"></div>
             <form id="addFriendByIdForm" class="add-friend-by-id-form">
                 <label for="addFriendByIdInput">Add friend by account ID</label>
                 <div class="add-friend-by-id-controls">
@@ -357,6 +354,9 @@
                 <p id="outgoingFriendRequestsStatus" class="profile-friends-status" role="status" aria-live="polite"></p>
                 <div id="outgoingFriendRequestsList" class="profile-friends-list"></div>
             </section>
+            <h3 class="profile-section-title">Your friends</h3>
+            <p id="friendsListStatus" class="profile-friends-status" role="status" aria-live="polite">Loading friends...</p>
+            <div id="friendsList" class="profile-friends-list"></div>
         </section>
     </div>
 
@@ -367,6 +367,52 @@
 
     <script src="/socket.io/socket.io.js"></script>
     <script>
+    const hardRefreshToken = new URLSearchParams(window.location.search).get('_hard_refresh');
+    if (hardRefreshToken) {
+        document.querySelectorAll('link[rel="stylesheet"]').forEach(link => {
+            const stylesheetUrl = new URL(link.href);
+            stylesheetUrl.searchParams.set('_hard_refresh', hardRefreshToken);
+            link.href = stylesheetUrl.toString();
+        });
+        const cleanUrl = new URL(window.location.href);
+        cleanUrl.searchParams.delete('_hard_refresh');
+        window.history.replaceState(null, '', cleanUrl);
+    }
+
+    let websiteVersion = '';
+    let versionCheckInProgress = false;
+    async function checkWebsiteVersion() {
+        if (versionCheckInProgress) return;
+        versionCheckInProgress = true;
+        try {
+            const response = await fetch('/version', { cache: 'no-store' });
+            if (!response.ok) throw new Error(`Version check failed with HTTP ${response.status}`);
+            const { version } = await response.json();
+            if (typeof version !== 'string' || !version) throw new Error('The server returned an invalid website version.');
+            if (!websiteVersion) {
+                websiteVersion = version;
+                return;
+            }
+            if (version === websiteVersion) return;
+            websiteVersion = version;
+            if (sessionStorage.getItem('prism-dismissed-website-version') === version) return;
+            if (window.confirm("The website's code has been changed. Refresh?")) {
+                const refreshUrl = new URL(window.location.href);
+                refreshUrl.searchParams.set('_hard_refresh', version);
+                window.location.replace(refreshUrl.toString());
+            } else {
+                sessionStorage.setItem('prism-dismissed-website-version', version);
+            }
+        } catch (error) {
+            console.warn('Could not check for website updates:', error);
+        } finally {
+            versionCheckInProgress = false;
+        }
+    }
+    checkWebsiteVersion();
+    window.setInterval(checkWebsiteVersion, 60000);
+    window.addEventListener('focus', checkWebsiteVersion);
+
     const socket = io();
     const savedTheme = localStorage.getItem('prism-theme') === 'dark' ? 'dark' : 'light';
     document.documentElement.dataset.theme = savedTheme;
