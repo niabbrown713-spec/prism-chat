@@ -799,3 +799,21 @@ io.on('connection', (socket) => {
         if (!Array.isArray(db.privateMessages[conversationId])) db.privateMessages[conversationId] = [];
         db.privateMessages[conversationId].push(payload);
         try {
+            writeDB(db);
+        } catch {
+            return callback({ success: false, message: "Your message could not be saved. Please try again." });
+        }
+        io.to(`user:${sender.id}`).to(`user:${recipient.id}`).emit('broadcast private message', payload);
+        callback({ success: true });
+    });
+
+    socket.on('disconnect', () => {
+        if (onlineUsers[socket.id]) {
+            delete onlineUsers[socket.id];
+            io.emit('update user lists', onlineUsers);
+        }
+    });
+});
+
+const PORT = Number(process.env.PORT) || 3009;
+server.listen(PORT, () => console.log(`Server executing successfully on port ${PORT}`));
