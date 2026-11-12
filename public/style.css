@@ -1660,4 +1660,78 @@ html[data-theme="dark"] .profile-friends-status {
 }
 
 html[data-theme="dark"] .profile-action-btn {
- 
+    border-color: #405b78;
+    background: #263c55;
+    color: #eef5ff;
+}
+
+html[data-theme="dark"] .add-friend-by-id-controls input {
+    border-color: #405b78;
+    background: #1e2d40;
+    color: #eef5ff;
+}
+
+html[data-theme="dark"] .profile-file-button {
+    border-color: #56667b;
+    background: #253448;
+    color: #eef5ff;
+}
+
+html[data-theme="dark"] .message-actions {
+    border-color: #3a485a;
+    background: #182638;
+}
+
+html[data-theme="dark"] .message-action-button:hover,
+html[data-theme="dark"] .message-action-button:focus-visible {
+    background: #2b3c52;
+    color: #eaf3ff;
+}
+
+html[data-theme="dark"] .theme-settings {
+    border-color: #35465b;
+}
+
+.theme-settings {
+    margin-bottom: 18px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #e2e6eb;
+}
+
+.theme-toggle-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    color: #243142;
+    font-size: 0.9rem;
+}
+
+.theme-toggle-row input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: #247bd1;
+    cursor: pointer;
+}
+
+.theme-settings-hint {
+    margin-top: 6px;
+    color: #687789;
+    font-size: 0.78rem;
+}
+
+html[data-theme="dark"] .theme-toggle-row,
+html[data-theme="dark"] .theme-settings-hint {
+    color: #c3cfde;
+}
+
+html[data-theme="dark"] .profile-fields input:not([type="file"]),
+html[data-theme="dark"] .profile-fields textarea {
+    border-color: #46566c;
+    background: #1b293b;
+    color: #eef4fc;
+}
+
+html[data-theme="dark"] .profile-field-hint {
+    color: #bdc9d8;
+}
