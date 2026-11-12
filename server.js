@@ -391,6 +391,9 @@ io.on('connection', (socket) => {
         if (data.messageColor !== undefined && (typeof data.messageColor !== "string" || !/^#[0-9a-f]{6}$/i.test(data.messageColor))) {
             return callback({ success: false, message: "Choose a valid message color." });
         }
+        if (data.avatarColor !== undefined && (typeof data.avatarColor !== "string" || !/^#[0-9a-f]{6}$/i.test(data.avatarColor))) {
+            return callback({ success: false, message: "Choose a valid profile picture color." });
+        }
         if (data.messageFont !== undefined && !MESSAGE_FONTS.has(data.messageFont)) {
             return callback({ success: false, message: "Choose a supported message font." });
         }
@@ -402,7 +405,9 @@ io.on('connection', (socket) => {
         user.pronouns = data.pronouns === undefined ? (user.pronouns || "") : data.pronouns.trim();
         user.bio = data.bio === undefined ? (user.bio || "") : data.bio.trim();
         user.bannerColor = bannerColor;
-        user.avatarColor = bannerColor;
+        user.avatarColor = data.avatarColor === undefined
+            ? (user.avatarColor || "#98caff")
+            : data.avatarColor;
         user.avatarImage = data.avatarImage === undefined ? (user.avatarImage || user.avatarUrl || "") : data.avatarImage;
         user.avatarUrl = "";
         user.bannerImage = data.bannerImage === undefined ? (user.bannerImage || "") : data.bannerImage;
@@ -414,15 +419,18 @@ io.on('connection', (socket) => {
             return callback({ success: false, message: "Your profile could not be written to storage. Please check the server's database storage and try again." });
         }
 
-        onlineUser.avatarColor = user.avatarColor;
-        onlineUser.avatarImage = user.avatarImage;
-        onlineUser.displayName = user.displayName;
-        onlineUser.pronouns = user.pronouns;
-        onlineUser.bio = user.bio;
-        onlineUser.bannerColor = user.bannerColor;
-        onlineUser.bannerImage = user.bannerImage;
-        onlineUser.messageColor = user.messageColor;
-        onlineUser.messageFont = user.messageFont;
+        for (const activeUser of Object.values(onlineUsers)) {
+            if (String(activeUser.id) !== String(user.id)) continue;
+            activeUser.avatarColor = user.avatarColor;
+            activeUser.avatarImage = user.avatarImage;
+            activeUser.displayName = user.displayName;
+            activeUser.pronouns = user.pronouns;
+            activeUser.bio = user.bio;
+            activeUser.bannerColor = user.bannerColor;
+            activeUser.bannerImage = user.bannerImage;
+            activeUser.messageColor = user.messageColor;
+            activeUser.messageFont = user.messageFont;
+        }
         callback({ success: true, user: clientAccount(user) });
         io.emit('update user lists', onlineUsers);
     });
@@ -670,11 +678,3 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () => {
         if (onlineUsers[socket.id]) {
-            delete onlineUsers[socket.id];
-            io.emit('update user lists', onlineUsers);
-        }
-    });
-});
-
-const PORT = Number(process.env.PORT) || 3009;
-server.listen(PORT, () => console.log(`Server executing successfully on port ${PORT}`));
