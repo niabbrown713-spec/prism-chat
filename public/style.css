@@ -276,6 +276,9 @@
             color: #555;
             font-size: 0.9rem;
             text-align: center;
+            display: flex;
+            justify-content: center;
+            gap: 2px;
         }
 
         .dm-unread-indicator {
