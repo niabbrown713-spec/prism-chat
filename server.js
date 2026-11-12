@@ -153,6 +153,8 @@ io.on('connection', (socket) => {
             bannerColor: "#84c5d0",
             bannerImage: "",
             friends: [],
+            friendRequestsSent: [],
+            friendRequestsReceived: [],
             messageColor: "#202124",
             messageFont: "system-ui",
             secretCodeSalt: secretCode.salt,
@@ -206,6 +208,8 @@ io.on('connection', (socket) => {
             ["bannerColor", "#84c5d0"],
             ["bannerImage", ""],
             ["friends", []],
+            ["friendRequestsSent", []],
+            ["friendRequestsReceived", []],
             ["messageColor", "#202124"],
             ["messageFont", "system-ui"]
         ]) {
@@ -234,7 +238,9 @@ io.on('connection', (socket) => {
             bannerImage: user.bannerImage || "",
             messageColor: user.messageColor || "#202124",
             messageFont: user.messageFont || "system-ui",
-            friends: Array.isArray(user.friends) ? user.friends : []
+            friends: Array.isArray(user.friends) ? user.friends : [],
+            friendRequestsSent: Array.isArray(user.friendRequestsSent) ? user.friendRequestsSent : [],
+            friendRequestsReceived: Array.isArray(user.friendRequestsReceived) ? user.friendRequestsReceived : []
         };
         socket.join(`user:${user.id}`);
         callback({ success: true, user: clientAccount(user), socketId: socket.id });
@@ -480,42 +486,112 @@ io.on('connection', (socket) => {
         if (!onlineUser || !data || typeof data.userId !== "string" || typeof data.add !== "boolean") {
             return callback({ success: false, message: "Could not update your friend list." });
         }
-        if (data.userId === onlineUser.id) {
+        const targetUserId = data.userId.trim();
+        if (targetUserId === String(onlineUser.id)) {
             return callback({ success: false, message: "You cannot add yourself as a friend." });
         }
         const db = readDB();
-        const user = db.users.find(account => account.id === onlineUser.id);
-        const friend = db.users.find(account => account.id === data.userId);
+        const user = db.users.find(account => String(account.id) === String(onlineUser.id));
+        const friend = db.users.find(account => String(account.id) === targetUserId);
         if (!user || !friend) {
             return callback({ success: false, message: "That account could not be found." });
         }
         user.friends = Array.isArray(user.friends) ? user.friends : [];
         friend.friends = Array.isArray(friend.friends) ? friend.friends : [];
+        user.friendRequestsSent = Array.isArray(user.friendRequestsSent) ? user.friendRequestsSent : [];
+        user.friendRequestsReceived = Array.isArray(user.friendRequestsReceived) ? user.friendRequestsReceived : [];
+        friend.friendRequestsSent = Array.isArray(friend.friendRequestsSent) ? friend.friendRequestsSent : [];
+        friend.friendRequestsReceived = Array.isArray(friend.friendRequestsReceived) ? friend.friendRequestsReceived : [];
         if (data.add) {
-            if (!user.friends.includes(friend.id)) user.friends.push(friend.id);
-            if (!friend.friends.includes(user.id)) friend.friends.push(user.id);
+            if (user.friends.some(id => String(id) === String(friend.id))) {
+                return callback({ success: true, status: "friends", friends: user.friends, friend: publicUser(friend) });
+            }
+            if (user.friendRequestsSent.some(id => String(id) === String(friend.id))) {
+                return callback({ success: true, status: "pending", friends: user.friends, friend: publicUser(friend) });
+            }
+            if (user.friendRequestsReceived.some(id => String(id) === String(friend.id))) {
+                return callback({ success: false, status: "incoming", message: "This person already sent you a request. Accept it in your Friends list." });
+            }
+            user.friendRequestsSent.push(String(friend.id));
+            friend.friendRequestsReceived.push(String(user.id));
         } else {
-            user.friends = user.friends.filter(id => id !== friend.id);
-            friend.friends = friend.friends.filter(id => id !== user.id);
+            user.friends = user.friends.filter(id => String(id) !== String(friend.id));
+            friend.friends = friend.friends.filter(id => String(id) !== String(user.id));
         }
         try {
             writeDB(db);
         } catch {
-            return callback({ success: false, message: "Your friend list could not be saved." });
+            return callback({ success: false, message: data.add ? "Your friend request could not be sent." : "Your friend list could not be saved." });
         }
         onlineUser.friends = user.friends;
-        for (const [sessionId, activeUser] of Object.entries(onlineUsers)) {
-            if (activeUser.id === friend.id) {
-                activeUser.friends = friend.friends;
-                io.to(sessionId).emit('friend list updated', { userId: friend.id, friends: friend.friends });
-            }
+        onlineUser.friendRequestsSent = user.friendRequestsSent;
+        onlineUser.friendRequestsReceived = user.friendRequestsReceived;
+        if (data.add) {
+            io.to(`user:${friend.id}`).emit('friend request received', { from: publicUser(user) });
+        } else {
+            io.to(`user:${friend.id}`).emit('friend list updated', { userId: friend.id, friends: friend.friends });
         }
         callback({
             success: true,
             friends: user.friends,
             friend: publicUser(friend),
-            isFriend: user.friends.includes(friend.id)
+            status: data.add ? "sent" : "removed",
+            friendRequestsSent: user.friendRequestsSent,
+            friendRequestsReceived: user.friendRequestsReceived
         });
+    });
+
+    socket.on('respond friend request', (data, callback) => {
+        const onlineUser = onlineUsers[socket.id];
+        if (!onlineUser || !data || typeof data.userId !== "string" || typeof data.accept !== "boolean") {
+            return callback({ success: false, message: "Could not respond to that friend request." });
+        }
+        const db = readDB();
+        const user = db.users.find(account => String(account.id) === String(onlineUser.id));
+        const requester = db.users.find(account => String(account.id) === data.userId.trim());
+        if (!user || !requester) return callback({ success: false, message: "That account could not be found." });
+        user.friends = Array.isArray(user.friends) ? user.friends : [];
+        requester.friends = Array.isArray(requester.friends) ? requester.friends : [];
+        user.friendRequestsReceived = Array.isArray(user.friendRequestsReceived) ? user.friendRequestsReceived : [];
+        user.friendRequestsSent = Array.isArray(user.friendRequestsSent) ? user.friendRequestsSent : [];
+        requester.friendRequestsSent = Array.isArray(requester.friendRequestsSent) ? requester.friendRequestsSent : [];
+        requester.friendRequestsReceived = Array.isArray(requester.friendRequestsReceived) ? requester.friendRequestsReceived : [];
+        if (!user.friendRequestsReceived.some(id => String(id) === String(requester.id)) ||
+            !requester.friendRequestsSent.some(id => String(id) === String(user.id))) {
+            return callback({ success: false, message: "That friend request is no longer available." });
+        }
+        user.friendRequestsReceived = user.friendRequestsReceived.filter(id => String(id) !== String(requester.id));
+        requester.friendRequestsSent = requester.friendRequestsSent.filter(id => String(id) !== String(user.id));
+        if (data.accept) {
+            if (!user.friends.some(id => String(id) === String(requester.id))) user.friends.push(String(requester.id));
+            if (!requester.friends.some(id => String(id) === String(user.id))) requester.friends.push(String(user.id));
+        }
+        try {
+            writeDB(db);
+        } catch {
+            return callback({ success: false, message: "Your response could not be saved." });
+        }
+        onlineUser.friends = user.friends;
+        onlineUser.friendRequestsReceived = user.friendRequestsReceived;
+        for (const [sessionId, activeUser] of Object.entries(onlineUsers)) {
+            if (String(activeUser.id) === String(requester.id)) {
+                activeUser.friends = requester.friends;
+                activeUser.friendRequestsSent = requester.friendRequestsSent;
+                io.to(sessionId).emit('friend list updated', { userId: requester.id, friends: requester.friends });
+            }
+        }
+        io.to(`user:${user.id}`).emit('friend list updated', { userId: user.id, friends: user.friends });
+        io.to(`user:${user.id}`).emit('friend request resolved', {
+            userId: user.id,
+            friendRequestsSent: user.friendRequestsSent,
+            friendRequestsReceived: user.friendRequestsReceived
+        });
+        io.to(`user:${requester.id}`).emit('friend request resolved', {
+            userId: requester.id,
+            friendRequestsSent: requester.friendRequestsSent,
+            friendRequestsReceived: requester.friendRequestsReceived
+        });
+        callback({ success: true, accepted: data.accept, friends: user.friends });
     });
 
     socket.on('get friends', callback => {
@@ -525,14 +601,25 @@ io.on('connection', (socket) => {
         const user = db.users.find(account => account.id === onlineUser.id);
         if (!user) return callback({ success: false, message: "Your account could not be found." });
         user.friends = Array.isArray(user.friends) ? user.friends : [];
+        user.friendRequestsSent = Array.isArray(user.friendRequestsSent) ? user.friendRequestsSent : [];
+        user.friendRequestsReceived = Array.isArray(user.friendRequestsReceived) ? user.friendRequestsReceived : [];
+        const findPublicAccounts = ids => ids
+            .map(id => db.users.find(account => String(account.id) === String(id)))
+            .filter(Boolean)
+            .map(publicUser);
         const friends = user.friends
-            .map(id => db.users.find(account => account.id === id))
+            .map(id => db.users.find(account => String(account.id) === String(id)))
             .filter(Boolean)
             .map(friend => ({
                 ...publicUser(friend),
                 sessionId: Object.entries(onlineUsers).find(([, active]) => String(active.id) === String(friend.id))?.[0] || ""
             }));
-        callback({ success: true, friends });
+        callback({
+            success: true,
+            friends,
+            incomingRequests: findPublicAccounts(user.friendRequestsReceived),
+            outgoingRequests: findPublicAccounts(user.friendRequestsSent)
+        });
     });
 
     socket.on('delete chat message', (data, callback) => {
