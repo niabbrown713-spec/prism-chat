@@ -146,6 +146,7 @@
                 <span id="pendingImageName"></span>
                 <button type="button" id="btnRemovePendingImage" aria-label="Remove attached image">×</button>
             </div>
+            <div id="typingIndicator" class="typing-indicator hidden" role="status" aria-live="polite"></div>
             <form class="chat-input-area" id="chatForm" onsubmit="event.preventDefault();">
                 <input type="file" id="messageImageFile" accept="image/*" class="hidden">
                 <button type="button" id="btnPlusImage" class="plus-img-btn" title="Attach image" aria-label="Attach image"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="24px" width="24px" fill="#8dc4ff"><path d="M12,12ZM5,21q-0.83,0-1.41-0.59T3,19V5Q3,4.17 3.59,3.59T5,3h8q0,0.42 0,0.92T13,5H5V19H19V11q0.58,0 1.08,0T21,11v8q0,0.82-0.59,1.41T19,21H5Zm1-4H18l-3.75-5l-3,4L9,13L6,17ZM17,9V7H15V5h2V3h2V5h2V7H19V9H17Z"></path></svg></button>
@@ -425,6 +426,10 @@ const messageCache = { global: [], private: {} };
 const privateChatPeers = new Map();
 const openPrivateChats = new Set();
 let pendingMessageImage = '';
+const typingUsersByRoom = new Map();
+let activeTypingRoom = '';
+let typingTimeout = null;
+let lastTypingSentAt = 0;
 const loginScreen = document.getElementById('loginScreen');
 const chatWindow = document.getElementById('chatWindow');
 const authMainView = document.getElementById('authMainView');
@@ -476,6 +481,7 @@ const replyBannerText = document.getElementById('replyBannerText');
 const btnCancelReply = document.getElementById('btnCancelReply');
 const chatForm = document.getElementById('chatForm');
 const messageInput = document.getElementById('messageInput');
+const typingIndicator = document.getElementById('typingIndicator');
 const chatMessages = document.getElementById('chatMessages');
 const btnPlusImage = document.getElementById('btnPlusImage');
 const messageImageFile = document.getElementById('messageImageFile');
@@ -653,6 +659,7 @@ privateChatList.appendChild(chatButton);
 function openPrivateChat(userId, peer) {
 const id = String(userId || '').trim();
 if (!id || id === String(currentUser && currentUser.id)) return;
+stopTyping();
 if (peer) privateChatPeers.set(id, peer);
 openPrivateChats.add(id);
 targetSocketIdInput.value = id;
@@ -661,6 +668,7 @@ tabPrivate.classList.add('active');
 tabGlobal.classList.remove('active');
 dmTargetBar.classList.remove('hidden');
 updateRoomTitle();
+renderTypingIndicator();
 unreadPrivateSenders.delete(id);
 updateDmUnreadIndicator();
 cancelReplyState();
@@ -721,6 +729,39 @@ mentionSuggestionUsers = [...onlineUsersById.entries()]
 if (currentUser) loadThreadViewer();
 if (currentUser && !friendsModal.classList.contains('hidden')) loadFriends();
 if (!userProfileModal.classList.contains('hidden') && viewedUserProfile) showUserProfile(viewedUserProfile);
+});
+socket.on('typing status', data => {
+if (!data || !currentUser || typeof data.userId !== 'string' || typeof data.username !== 'string') return;
+const roomKey = data.mode === 'global'
+? 'global'
+: data.mode === 'private'
+? `private:${String(data.userId)}`
+: '';
+if (!roomKey || data.userId === String(currentUser.id)) return;
+let users = typingUsersByRoom.get(roomKey);
+if (!users) {
+users = new Map();
+typingUsersByRoom.set(roomKey, users);
+}
+const previous = users.get(data.userId);
+if (previous) clearTimeout(previous.expiration);
+if (!data.isTyping) {
+users.delete(data.userId);
+if (users.size === 0) typingUsersByRoom.delete(roomKey);
+renderTypingIndicator();
+return;
+}
+const user = { username: data.username, expiration: null };
+user.expiration = setTimeout(() => {
+const activeUsers = typingUsersByRoom.get(roomKey);
+if (activeUsers && activeUsers.get(data.userId) === user) {
+activeUsers.delete(data.userId);
+if (activeUsers.size === 0) typingUsersByRoom.delete(roomKey);
+renderTypingIndicator();
+}
+}, 4000);
+users.set(data.userId, user);
+renderTypingIndicator();
 });
 socket.on('friend list updated', data => {
 if (!currentUser || String(currentUser.id) !== String(data.userId)) return;
@@ -1492,14 +1533,18 @@ loadFriends();
 });
 });
 tabGlobal.addEventListener('click', () => {
+stopTyping();
 currentMode = "global"; tabGlobal.classList.add('active'); tabPrivate.classList.remove('active'); dmTargetBar.classList.add('hidden');
 privateChatList.classList.add('hidden');
 updateRoomTitle();
+renderTypingIndicator();
 cancelReplyState(); loadThreadViewer();
 });
 tabPrivate.addEventListener('click', () => {
+stopTyping();
 currentMode = "private"; tabPrivate.classList.add('active'); tabGlobal.classList.remove('active'); dmTargetBar.classList.remove('hidden');
 updateRoomTitle();
+renderTypingIndicator();
 renderPrivateChatList();
 unreadPrivateSenders.delete(targetSocketIdInput.value.trim());
 updateDmUnreadIndicator();
@@ -1513,6 +1558,60 @@ return;
 }
 openPrivateChat(peerId, onlineUsersById.get(peerId) || privateChatPeers.get(peerId));
 }
+function getTypingRoom() {
+if (currentMode === 'global') return { key: 'global', mode: 'global' };
+const targetId = targetSocketIdInput.value.trim();
+return targetId ? { key: `private:${targetId}`, mode: 'private', targetId } : null;
+}
+function emitTypingStatus(room, isTyping) {
+if (!room || !currentUser) return;
+socket.emit('typing status', {
+mode: room.mode,
+targetId: room.targetId,
+isTyping
+});
+}
+function stopTyping(roomKey = activeTypingRoom) {
+if (typingTimeout) {
+clearTimeout(typingTimeout);
+typingTimeout = null;
+}
+if (!roomKey) return;
+const [mode, targetId] = roomKey === 'global' ? ['global', ''] : ['private', roomKey.slice('private:'.length)];
+emitTypingStatus({ mode, targetId }, false);
+if (activeTypingRoom === roomKey) activeTypingRoom = '';
+}
+function updateTypingStatus() {
+const room = getTypingRoom();
+if (!messageInput.value.trim() || !room) {
+stopTyping();
+return;
+}
+if (activeTypingRoom && activeTypingRoom !== room.key) stopTyping();
+const shouldEmitStart = activeTypingRoom !== room.key || Date.now() - lastTypingSentAt >= 700;
+activeTypingRoom = room.key;
+if (shouldEmitStart) {
+emitTypingStatus(room, true);
+lastTypingSentAt = Date.now();
+}
+if (typingTimeout) clearTimeout(typingTimeout);
+typingTimeout = setTimeout(() => {
+emitTypingStatus(room, false);
+if (activeTypingRoom === room.key) activeTypingRoom = '';
+typingTimeout = null;
+}, 1800);
+}
+function renderTypingIndicator() {
+const room = getTypingRoom();
+const users = room && typingUsersByRoom.get(room.key);
+const usernames = users ? [...users.values()].map(user => user.username) : [];
+typingIndicator.textContent = usernames.length === 1
+? `${usernames[0]} is typing...`
+: usernames.length > 1
+? `${usernames.slice(0, -1).join(', ')} and ${usernames[usernames.length - 1]} are typing...`
+: '';
+typingIndicator.classList.toggle('hidden', usernames.length === 0);
+}
 btnOpenDmById.addEventListener('click', openDmFromInput);
 targetSocketIdInput.addEventListener('keydown', event => {
 if (event.key === 'Enter') {
@@ -1521,6 +1620,7 @@ openDmFromInput();
 }
 });
 messageInput.addEventListener('input', () => {
+updateTypingStatus();
 const match = /(?:^|\s)@([^\s]*)$/.exec(messageInput.value);
 mentionSuggestions.replaceChildren();
 if (!match) {
@@ -1550,6 +1650,7 @@ messageInput.addEventListener('keydown', event => {
 if (event.key === 'Escape') mentionSuggestions.classList.add('hidden');
 });
 chatForm.addEventListener('submit', function() {
+stopTyping();
 mentionSuggestions.classList.add('hidden');
 const messageText = messageInput.value.trim();
 if (messageText === '' && !pendingMessageImage) return;
@@ -1816,105 +1917,4 @@ const effectiveMessageColor = document.documentElement.dataset.theme === 'dark' 
 messageText.style.color = /^#[0-9a-f]{6}$/i.test(effectiveMessageColor || '') ? effectiveMessageColor : '#202124';
 messageText.style.fontFamily = ['system-ui', 'Arial', 'Georgia', 'monospace', 'cursive'].includes(messageFont) ? messageFont : 'system-ui';
 messageDiv.append(messageHeader, messageText);
-if (image) {
-const messageImage = document.createElement('img');
-messageImage.classList.add('chat-message-image');
-messageImage.src = image;
-messageImage.alt = 'Image sent in chat';
-messageImage.loading = 'lazy';
-messageImage.tabIndex = 0;
-messageImage.setAttribute('role', 'button');
-messageImage.setAttribute('aria-label', 'Enlarge image');
-const openImage = event => {
-event.stopPropagation();
-imageViewerTrigger = messageImage;
-imageViewerContent.src = image;
-imageViewer.classList.remove('hidden');
-btnCloseImageViewer.focus();
-};
-messageImage.addEventListener('click', openImage);
-messageImage.addEventListener('dblclick', event => event.stopPropagation());
-messageImage.addEventListener('keydown', event => {
-if (event.key === 'Enter' || event.key === ' ') {
-event.preventDefault();
-openImage(event);
-}
-});
-messageImage.addEventListener('error', () => messageImage.remove(), { once: true });
-messageDiv.appendChild(messageImage);
-}
-messageDiv.addEventListener('dblclick', () => initiateReplyState(senderName, text, image, userId, messageId));
-messageDiv.addEventListener('contextmenu', event => event.preventDefault());
-container.appendChild(messageDiv);
-const messageActions = document.createElement('div');
-messageActions.classList.add('message-actions');
-const copyButton = document.createElement('button');
-copyButton.type = 'button';
-copyButton.classList.add('message-action-button');
-copyButton.setAttribute('aria-label', 'Copy message');
-copyButton.title = 'Copy message';
-copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="24px" width="24px" fill="#59636f" aria-hidden="true"><path d="M9,18q-0.82,0-1.41-0.59T7,16V4Q7,3.17 7.59,2.59T9,2h9q0.82,0 1.41,0.59T20,4V16q0,0.82-0.59,1.41T18,18H9Zm0-2h9V4H9V16ZM5,22q-0.83,0-1.41-0.59T3,20V6H5V20H16v2H5Zm4-6V4V16Z"></path></svg>';
-copyButton.addEventListener('click', async event => {
-event.stopPropagation();
-try {
-await navigator.clipboard.writeText(text || (image ? 'Image attachment' : ''));
-copyButton.title = 'Copied';
-setTimeout(() => { copyButton.title = 'Copy message'; }, 1200);
-} catch (error) {
-alert('Could not copy this message. Try selecting its text and copying manually.');
-}
-});
-messageActions.appendChild(copyButton);
-const replyButton = document.createElement('button');
-replyButton.type = 'button';
-replyButton.classList.add('message-action-button');
-replyButton.setAttribute('aria-label', 'Reply to message');
-replyButton.title = 'Reply';
-replyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="24px" width="24px" fill="#59636f" aria-hidden="true"><path d="M19 19V15c0-1.66-1.34-3-3-3H6.83l3.6 3.6L9 17l-6-6 6-6 1.43 1.4-3.6 3.6H16c2.76 0 5 2.24 5 5v4h-2Z"></path></svg>';
-replyButton.addEventListener('click', event => {
-event.stopPropagation();
-initiateReplyState(senderName, text, image, userId, messageId);
-});
-messageActions.appendChild(replyButton);
-if (isMe || currentUser.role === 'Owner') {
-const deleteButton = document.createElement('button');
-deleteButton.type = 'button';
-deleteButton.classList.add('message-action-button', 'message-delete-button');
-deleteButton.setAttribute('aria-label', 'Delete message');
-deleteButton.title = currentUser.role === 'Owner' && !isMe ? 'Delete this message (owner)' : 'Delete message';
-deleteButton.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true"></i>';
-deleteButton.addEventListener('click', event => {
-event.stopPropagation();
-if (!window.confirm('Are you sure you want to delete this message?')) return;
-deleteButton.disabled = true;
-socket.timeout(8000).emit('delete chat message', { messageId }, (error, response) => {
-deleteButton.disabled = false;
-if (error || !response || !response.success) {
-alert(response && response.message ? response.message : 'Could not delete the message. Try again.');
-}
-});
-});
-messageActions.appendChild(deleteButton);
-}
-container.appendChild(messageActions);
-chatMessages.appendChild(container);
-}
-function closeImageViewer() {
-imageViewer.classList.add('hidden');
-imageViewerContent.removeAttribute('src');
-if (imageViewerTrigger && imageViewerTrigger.isConnected) imageViewerTrigger.focus();
-imageViewerTrigger = null;
-}
-btnCloseImageViewer.addEventListener('click', closeImageViewer);
-imageViewer.addEventListener('click', event => {
-if (event.target === imageViewer) closeImageViewer();
-});
-document.addEventListener('keydown', event => {
-if (event.key === 'Escape' && !imageViewer.classList.contains('hidden')) closeImageViewer();
-if (event.key === 'Escape') dmRecipientModal.classList.add('hidden');
-if (event.key === 'Escape') friendsModal.classList.add('hidden');
-if (event.key === 'Escape') settingsModal.classList.add('hidden');
-});
-</script>
-</body>
-</html>
+if (ima
