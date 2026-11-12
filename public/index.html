@@ -833,7 +833,20 @@ return;
 }
 payload.secretCode = secretCodeInput.value.trim();
 }
-socket.emit(eventName, payload, (res) => {
+btnSubmitLogin.disabled = true;
+const submitLabel = btnSubmitLogin.textContent;
+btnSubmitLogin.textContent = isLoginMode ? 'Logging in...' : 'Creating account...';
+socket.timeout(10000).emit(eventName, payload, (error, res) => {
+btnSubmitLogin.disabled = false;
+btnSubmitLogin.textContent = submitLabel;
+if (error) {
+alert('The server did not respond. Check your connection and try again.');
+return;
+}
+if (!res) {
+alert('The server returned no response. Please try again.');
+return;
+}
 if (res.success) {
 currentUser = res.user;
 onlineUserIds.add(String(currentUser.id));
@@ -843,7 +856,7 @@ loginScreen.classList.add('hidden');
 chatWindow.classList.remove('hidden');
 loadThreadViewer();
 loadPrivateConversations();
-} else { alert(res.message); }
+} else { alert(res.message || 'Could not sign in. Please try again.'); }
 });
 });
 btnForgetPassword.addEventListener('click', () => {
@@ -1917,4 +1930,105 @@ const effectiveMessageColor = document.documentElement.dataset.theme === 'dark' 
 messageText.style.color = /^#[0-9a-f]{6}$/i.test(effectiveMessageColor || '') ? effectiveMessageColor : '#202124';
 messageText.style.fontFamily = ['system-ui', 'Arial', 'Georgia', 'monospace', 'cursive'].includes(messageFont) ? messageFont : 'system-ui';
 messageDiv.append(messageHeader, messageText);
-if (ima
+if (image) {
+const messageImage = document.createElement('img');
+messageImage.classList.add('chat-message-image');
+messageImage.src = image;
+messageImage.alt = 'Image sent in chat';
+messageImage.loading = 'lazy';
+messageImage.tabIndex = 0;
+messageImage.setAttribute('role', 'button');
+messageImage.setAttribute('aria-label', 'Enlarge image');
+const openImage = event => {
+event.stopPropagation();
+imageViewerTrigger = messageImage;
+imageViewerContent.src = image;
+imageViewer.classList.remove('hidden');
+btnCloseImageViewer.focus();
+};
+messageImage.addEventListener('click', openImage);
+messageImage.addEventListener('dblclick', event => event.stopPropagation());
+messageImage.addEventListener('keydown', event => {
+if (event.key === 'Enter' || event.key === ' ') {
+event.preventDefault();
+openImage(event);
+}
+});
+messageImage.addEventListener('error', () => messageImage.remove(), { once: true });
+messageDiv.appendChild(messageImage);
+}
+messageDiv.addEventListener('dblclick', () => initiateReplyState(senderName, text, image, userId, messageId));
+messageDiv.addEventListener('contextmenu', event => event.preventDefault());
+container.appendChild(messageDiv);
+const messageActions = document.createElement('div');
+messageActions.classList.add('message-actions');
+const copyButton = document.createElement('button');
+copyButton.type = 'button';
+copyButton.classList.add('message-action-button');
+copyButton.setAttribute('aria-label', 'Copy message');
+copyButton.title = 'Copy message';
+copyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="24px" width="24px" fill="#59636f" aria-hidden="true"><path d="M9,18q-0.82,0-1.41-0.59T7,16V4Q7,3.17 7.59,2.59T9,2h9q0.82,0 1.41,0.59T20,4V16q0,0.82-0.59,1.41T18,18H9Zm0-2h9V4H9V16ZM5,22q-0.83,0-1.41-0.59T3,20V6H5V20H16v2H5Zm4-6V4V16Z"></path></svg>';
+copyButton.addEventListener('click', async event => {
+event.stopPropagation();
+try {
+await navigator.clipboard.writeText(text || (image ? 'Image attachment' : ''));
+copyButton.title = 'Copied';
+setTimeout(() => { copyButton.title = 'Copy message'; }, 1200);
+} catch (error) {
+alert('Could not copy this message. Try selecting its text and copying manually.');
+}
+});
+messageActions.appendChild(copyButton);
+const replyButton = document.createElement('button');
+replyButton.type = 'button';
+replyButton.classList.add('message-action-button');
+replyButton.setAttribute('aria-label', 'Reply to message');
+replyButton.title = 'Reply';
+replyButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" height="24px" width="24px" fill="#59636f" aria-hidden="true"><path d="M19 19V15c0-1.66-1.34-3-3-3H6.83l3.6 3.6L9 17l-6-6 6-6 1.43 1.4-3.6 3.6H16c2.76 0 5 2.24 5 5v4h-2Z"></path></svg>';
+replyButton.addEventListener('click', event => {
+event.stopPropagation();
+initiateReplyState(senderName, text, image, userId, messageId);
+});
+messageActions.appendChild(replyButton);
+if (isMe || currentUser.role === 'Owner') {
+const deleteButton = document.createElement('button');
+deleteButton.type = 'button';
+deleteButton.classList.add('message-action-button', 'message-delete-button');
+deleteButton.setAttribute('aria-label', 'Delete message');
+deleteButton.title = currentUser.role === 'Owner' && !isMe ? 'Delete this message (owner)' : 'Delete message';
+deleteButton.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true"></i>';
+deleteButton.addEventListener('click', event => {
+event.stopPropagation();
+if (!window.confirm('Are you sure you want to delete this message?')) return;
+deleteButton.disabled = true;
+socket.timeout(8000).emit('delete chat message', { messageId }, (error, response) => {
+deleteButton.disabled = false;
+if (error || !response || !response.success) {
+alert(response && response.message ? response.message : 'Could not delete the message. Try again.');
+}
+});
+});
+messageActions.appendChild(deleteButton);
+}
+container.appendChild(messageActions);
+chatMessages.appendChild(container);
+}
+function closeImageViewer() {
+imageViewer.classList.add('hidden');
+imageViewerContent.removeAttribute('src');
+if (imageViewerTrigger && imageViewerTrigger.isConnected) imageViewerTrigger.focus();
+imageViewerTrigger = null;
+}
+btnCloseImageViewer.addEventListener('click', closeImageViewer);
+imageViewer.addEventListener('click', event => {
+if (event.target === imageViewer) closeImageViewer();
+});
+document.addEventListener('keydown', event => {
+if (event.key === 'Escape' && !imageViewer.classList.contains('hidden')) closeImageViewer();
+if (event.key === 'Escape') dmRecipientModal.classList.add('hidden');
+if (event.key === 'Escape') friendsModal.classList.add('hidden');
+if (event.key === 'Escape') settingsModal.classList.add('hidden');
+});
+</script>
+</body>
+</html>
