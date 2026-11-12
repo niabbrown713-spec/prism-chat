@@ -252,7 +252,7 @@
                 <h3 class="profile-section-title">Theme</h3>
                 <label class="theme-toggle-row" for="darkThemeToggle">
                     <span>Dark theme</span>
-                    <input type="checkbox" id="darkThemeToggle" checked>
+                    <input type="checkbox" id="darkThemeToggle">
                 </label>
                 <p class="theme-settings-hint">This preference is saved on this device.</p>
             </section>
@@ -269,6 +269,9 @@
                 <label for="profileMessageColor">Message color</label>
                 <input type="color" id="profileMessageColor" value="#202124">
                 <p id="profileMessageSample" class="profile-message-sample">Your messages will look like this.</p>
+                <label for="profileNameColor">Name color</label>
+                <input type="color" id="profileNameColor" value="#202124">
+                <p id="profileNameSample" class="profile-message-sample">Your name will look like this.</p>
             </div>
             <p id="settingsSaveStatus" class="profile-save-status" role="status" aria-live="polite"></p>
             <div class="profile-panel-actions">
@@ -333,9 +336,6 @@
                 <h2 id="friendsTitle">Friends</h2>
                 <button type="button" id="btnCloseFriends" class="profile-close-btn" aria-label="Close friends">×</button>
             </header>
-                <h3 class="profile-section-title">Your friends</h3>
-                <p id="friendsListStatus" class="profile-friends-status" role="status" aria-live="polite">Loading friends...</p>
-                <div id="friendsList" class="profile-friends-list"></div>
             <form id="addFriendByIdForm" class="add-friend-by-id-form">
                 <label for="addFriendByIdInput">Add friend by account ID</label>
                 <div class="add-friend-by-id-controls">
@@ -354,6 +354,9 @@
                 <p id="outgoingFriendRequestsStatus" class="profile-friends-status" role="status" aria-live="polite"></p>
                 <div id="outgoingFriendRequestsList" class="profile-friends-list"></div>
             </section>
+            <h3 class="profile-section-title">Your friends</h3>
+            <p id="friendsListStatus" class="profile-friends-status" role="status" aria-live="polite">Loading friends...</p>
+            <div id="friendsList" class="profile-friends-list"></div>
         </section>
     </div>
 
@@ -470,6 +473,8 @@ const profileSessionId = document.getElementById('profileSessionId');
 const profileMessageFont = document.getElementById('profileMessageFont');
 const profileMessageColor = document.getElementById('profileMessageColor');
 const profileMessageSample = document.getElementById('profileMessageSample');
+const profileNameColor = document.getElementById('profileNameColor');
+const profileNameSample = document.getElementById('profileNameSample');
 const profileFriendsStatus = document.getElementById('profileFriendsStatus');
 const profileFriendsList = document.getElementById('profileFriendsList');
 const btnOpenFriends = document.getElementById('btnOpenFriends');
@@ -637,6 +642,7 @@ avatarColor: message.avatarColor,
 avatarUrl: message.avatarImage,
 messageColor: message.messageColor,
 messageFont: message.messageFont,
+nameColor: message.nameColor,
 bio: message.bio,
 bannerColor: message.bannerColor,
 bannerImage: message.bannerImage,
@@ -910,6 +916,8 @@ profileMessageFont.value = currentUser.messageFont || 'system-ui';
 profileMessageColor.value = currentUser.messageColor || '#202124';
 profileMessageSample.style.color = profileMessageColor.value;
 profileMessageSample.style.fontFamily = profileMessageFont.value;
+profileNameColor.value = currentUser.nameColor || '#202124';
+profileNameSample.style.color = profileNameColor.value;
 settingsSaveStatus.textContent = '';
 settingsModal.classList.remove('hidden');
 });
@@ -930,12 +938,16 @@ profileMessageSample.style.fontFamily = profileMessageFont.value;
 profileMessageColor.addEventListener('input', () => {
 profileMessageSample.style.color = profileMessageColor.value;
 });
+profileNameColor.addEventListener('input', () => {
+profileNameSample.style.color = profileNameColor.value;
+});
 btnSaveSettings.addEventListener('click', () => {
 btnSaveSettings.disabled = true;
 settingsSaveStatus.textContent = 'Saving settings...';
 socket.timeout(10000).emit('update profile parameters', {
 messageFont: profileMessageFont.value,
-messageColor: profileMessageColor.value
+messageColor: profileMessageColor.value,
+nameColor: profileNameColor.value
 }, (error, response) => {
 btnSaveSettings.disabled = false;
 if (error || !response || !response.success) {
@@ -947,6 +959,7 @@ const updateOwnAppearance = messages => messages.forEach(message => {
 if (message.isMe) {
 message.messageColor = currentUser.messageColor || '#202124';
 message.messageFont = currentUser.messageFont || 'system-ui';
+message.nameColor = currentUser.nameColor || '#202124';
 }
 });
 updateOwnAppearance(messageCache.global);
@@ -1107,6 +1120,7 @@ message.sender = currentUser.displayName || currentUser.username;
 message.pronouns = currentUser.pronouns || '';
 message.messageColor = currentUser.messageColor || '#202124';
 message.messageFont = currentUser.messageFont || 'system-ui';
+message.nameColor = currentUser.nameColor || '#202124';
 }
 });
 updateOwnAvatars(messageCache.global);
@@ -1512,7 +1526,7 @@ finishSendingMessage();
 }
 });
 socket.on('broadcast global message', function(data) {
-messageCache.global.push({ messageId: data.messageId, sender: data.user, username: data.username, userId: data.userId, pronouns: data.pronouns, role: data.role, avatarColor: data.avatarColor, avatarUrl: data.avatarImage || data.avatarUrl, messageColor: data.messageColor, messageFont: data.messageFont, bio: data.bio, bannerColor: data.bannerColor, bannerImage: data.bannerImage, text: data.text, image: data.image || '', isMe: data.senderId === mySocketId, replyTo: data.replyTo, timestamp: data.timestamp });
+messageCache.global.push({ messageId: data.messageId, sender: data.user, username: data.username, userId: data.userId, pronouns: data.pronouns, role: data.role, avatarColor: data.avatarColor, avatarUrl: data.avatarImage || data.avatarUrl, messageColor: data.messageColor, messageFont: data.messageFont, nameColor: data.nameColor, bio: data.bio, bannerColor: data.bannerColor, bannerImage: data.bannerImage, text: data.text, image: data.image || '', isMe: data.senderId === mySocketId, replyTo: data.replyTo, timestamp: data.timestamp });
 if (currentMode === "global" && currentUser) loadThreadViewer();
 });
 socket.on('user joined', data => {
@@ -1537,7 +1551,8 @@ avatarImage: data.avatarImage,
 pronouns: data.pronouns,
 bio: data.bio,
 bannerColor: data.bannerColor,
-bannerImage: data.bannerImage
+bannerImage: data.bannerImage,
+nameColor: data.nameColor
 });
 } else if (data.recipient) {
 privateChatPeers.set(peerId, data.recipient);
@@ -1546,7 +1561,7 @@ privateChatPeers.set(peerId, onlineUsersById.get(peerId) || { id: peerId, userna
 }
 openPrivateChats.add(peerId);
 if (!messageCache.private[peerId]) messageCache.private[peerId] = [];
-messageCache.private[peerId].push({ messageId: data.messageId, sender: data.user, username: data.username, userId: data.userId, pronouns: data.pronouns, role: data.role, avatarColor: data.avatarColor, avatarUrl: data.avatarImage || data.avatarUrl, messageColor: data.messageColor, messageFont: data.messageFont, bio: data.bio, bannerColor: data.bannerColor, bannerImage: data.bannerImage, text: data.text, image: data.image || '', isMe: String(data.userId) === String(currentUser.id), replyTo: data.replyTo, timestamp: data.timestamp });
+messageCache.private[peerId].push({ messageId: data.messageId, sender: data.user, username: data.username, userId: data.userId, pronouns: data.pronouns, role: data.role, avatarColor: data.avatarColor, avatarUrl: data.avatarImage || data.avatarUrl, messageColor: data.messageColor, messageFont: data.messageFont, nameColor: data.nameColor, bio: data.bio, bannerColor: data.bannerColor, bannerImage: data.bannerImage, text: data.text, image: data.image || '', isMe: String(data.userId) === String(currentUser.id), replyTo: data.replyTo, timestamp: data.timestamp });
 renderPrivateChatList();
 if (currentMode === "private" && targetSocketIdInput.value.trim() === peerId) {
 unreadPrivateSenders.delete(peerId);
@@ -1579,12 +1594,12 @@ chatMessages.innerHTML = '';
 if (currentMode === "global") {
 messageCache.global.forEach(msg => {
 if (msg.system) return appendSystemMessage(msg.text);
-appendMessageDOM(msg.sender, msg.pronouns, msg.role, msg.avatarColor, msg.avatarUrl, msg.text, msg.image, msg.isMe, msg.replyTo, msg.timestamp, msg.userId, msg.messageId, msg.messageFont, msg.messageColor, msg.username, msg.bio, msg.bannerColor, msg.bannerImage);
+appendMessageDOM(msg.sender, msg.pronouns, msg.role, msg.avatarColor, msg.avatarUrl, msg.text, msg.image, msg.isMe, msg.replyTo, msg.timestamp, msg.userId, msg.messageId, msg.messageFont, msg.messageColor, msg.username, msg.bio, msg.bannerColor, msg.bannerImage, msg.nameColor);
 });
 } else {
 const targetId = targetSocketIdInput.value.trim();
 if (targetId && messageCache.private[targetId]) {
-messageCache.private[targetId].forEach(msg => appendMessageDOM(msg.sender, msg.pronouns, msg.role, msg.avatarColor, msg.avatarUrl, msg.text, msg.image, msg.isMe, msg.replyTo, msg.timestamp, msg.userId, msg.messageId, msg.messageFont, msg.messageColor, msg.username, msg.bio, msg.bannerColor, msg.bannerImage));
+messageCache.private[targetId].forEach(msg => appendMessageDOM(msg.sender, msg.pronouns, msg.role, msg.avatarColor, msg.avatarUrl, msg.text, msg.image, msg.isMe, msg.replyTo, msg.timestamp, msg.userId, msg.messageId, msg.messageFont, msg.messageColor, msg.username, msg.bio, msg.bannerColor, msg.bannerImage, msg.nameColor));
 } else if (!targetId) {
 chatMessages.textContent = 'Choose a person or enter their account ID above to view the conversation.';
 }
@@ -1597,7 +1612,7 @@ event.classList.add('chat-system-event');
 event.textContent = text;
 chatMessages.appendChild(event);
 }
-function appendMessageDOM(sender, pronouns, role, avatarColor, avatarUrl, text, image, isMe, replyTo, timestampValue, userId, messageId, messageFont, messageColor, username, bio, bannerColor, bannerImage) {
+function appendMessageDOM(sender, pronouns, role, avatarColor, avatarUrl, text, image, isMe, replyTo, timestampValue, userId, messageId, messageFont, messageColor, username, bio, bannerColor, bannerImage, nameColor) {
 const senderName = typeof sender === 'string' && sender.trim() ? sender.trim() : 'Prism';
 const container = document.createElement('div');
 container.classList.add('message-row', isMe ? 'sent' : 'received');
@@ -1706,6 +1721,11 @@ messageHeader.classList.add('message-header');
 const senderLabel = document.createElement('span');
 senderLabel.classList.add('username');
 senderLabel.textContent = senderName;
+const currentNameColor = onlineUsersById.get(String(userId || ''))?.nameColor || nameColor;
+const effectiveNameColor = document.documentElement.dataset.theme === 'dark' && /^#202124$/i.test(currentNameColor || '')
+? '#e5eaf2'
+: currentNameColor;
+if (/^#[0-9a-f]{6}$/i.test(effectiveNameColor || '')) senderLabel.style.color = effectiveNameColor;
 senderLabel.classList.add('message-profile-trigger');
 senderLabel.setAttribute('role', 'button');
 senderLabel.setAttribute('tabindex', '0');
