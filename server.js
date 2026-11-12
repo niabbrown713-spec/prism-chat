@@ -1,1663 +1,801 @@
-        body {
-            background: #0091ff;
-            background: linear-gradient(90deg, rgb(117 195 255 / 32%) 0%, rgb(133 216 255 / 32%) 50%, rgb(200 227 255 / 32%) 100%);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-        }
-
-        .chat-container {
-            width: 100%;
-            height: 100%;
-            background: #d5f0ff;
-            border-radius: 8px;
-            box-shadow: -20px 20px 15px rgba(0, 0, 0, 0.1);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .login-screen {
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            min-height: 100%;
-            padding: 30px;
-            text-align: center;
-            gap: 12px;
-            align-content: center;
-            overflow-y: auto;
-        }
-
-        .auth-main-view {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            width: 100%;
-            max-width: 430px;
-            margin: auto;
-        }
-
-        #secretCodeSetup {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        #secretCodeSetup small {
-            color: #42637f;
-            font-size: 0.8rem;
-        }
-
-        .auth-secondary-btn {
-            padding: 8px;
-            border: 0;
-            background: transparent !important;
-            color: #1762c4 !important;
-            font-size: 0.9rem !important;
-            cursor: pointer;
-        }
-
-        .auth-flow-card {
-            width: min(100%, 400px);
-            margin: auto;
-            padding: 32px 40px;
-            border: 1px solid #d6d9de;
-            border-radius: 6px;
-            background: #fff;
-            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.16);
-            color: #303943;
-            text-align: center;
-        }
-
-        .auth-flow-card h2 {
-            margin-bottom: 12px;
-            color: #303943;
-            font-size: 1.4rem;
-            font-weight: 500;
-        }
-
-        .auth-flow-card > p {
-            margin-bottom: 20px;
-            color: #374151;
-            font-size: 0.9rem;
-            line-height: 1.5;
-        }
-
-        .auth-flow-form {
-            display: flex;
-            flex-direction: column;
-            gap: 9px;
-            text-align: left;
-        }
-
-        .auth-flow-form label {
-            color: #6b7280;
-            font-size: 0.95rem;
-        }
-
-        .auth-flow-form input {
-            min-height: 48px;
-            border: 1px solid #777;
-            border-radius: 2px;
-            background: #fff;
-            color: #202124;
-        }
-
-        .auth-flow-form button[type="submit"] {
-            min-height: 52px;
-            margin-top: 10px;
-            border-radius: 3px;
-            background: #075bd8;
-            color: #fff;
-            font-size: 1rem;
-            cursor: pointer;
-        }
-
-        .auth-flow-form button:disabled {
-            cursor: wait;
-            opacity: 0.65;
-        }
-
-        .auth-flow-status {
-            min-height: 1.2em;
-            margin: 3px 0;
-            color: #b42318;
-            font-size: 0.85rem;
-            text-align: left;
-        }
-
-        .password-requirement {
-            display: flex;
-            flex-direction: column;
-            gap: 9px;
-            padding: 14px;
-            border: 1px solid #c8d0d9;
-            border-radius: 3px;
-            color: #374151;
-            font-size: 0.85rem;
-        }
-
-        #passwordLengthRequirement {
-            color: #008b56;
-        }
-
-        #passwordLengthRequirement.requirement-unmet {
-            color: #7b8490;
-        }
-
-        .reset-password-icon {
-            margin-bottom: 20px;
-            color: #526bff;
-        }
-
-        .reset-password-icon svg {
-            width: 48px;
-            height: 48px;
-            fill: #526bff;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: system-ui;
-            border: none;
-        }
-
-        input, select {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            outline: none;
-            background-color: #9cc8ff38;
-            color: #2f7cbf;
-        }
-
-        .password-field {
-            display: flex;
-            position: relative;
-            align-items: center;
-        }
-
-        .password-field .password-toggle {
-            position: absolute;
-            right: 8px;
-            width: 36px;
-            height: 36px;
-            margin: 0;
-            padding: 7px;
-            background: transparent;
-            color: #0260b3;
-        }
-
-        .password-field .password-eye {
-            display: block;
-            width: 100%;
-            height: 100%;
-            fill: none;
-            stroke: currentColor;
-            stroke-width: 2;
-            stroke-linecap: round;
-            stroke-linejoin: round;
-        }
-
-        .password-eye-slash {
-            display: none;
-        }
-
-        .password-eye.password-visible .password-eye-slash {
-            display: block;
-        }
-
-        .login-screen button {
-            width: 100%;
-            background: #98caff;
-            color: white;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            font-size: 1rem;
-            cursor: pointer;
-            margin-top: 30px;
-            align-self: center;
-        }
-
-        .toggle-auth {
-            color: #98caff;
-            cursor: pointer;
-        }
-
-        .chat-header {
-            background: #98caff;
-            color: white;
-            padding: 48px 15px 15px;
-            text-align: center;
-            position: relative;
-        }
-
-        .meta-id-display {
-            font-size: 0.75rem;
-            color: rgba(255, 255, 255, 0.8);
-            margin-top: 4px;
-            word-break: break-all;
-        }
-
-        .navigation-tabs {
-            display: flex;
-            background: #e9ecef;
-            border-bottom: 1px solid #ccc;
-        }
-
-        .tab-btn.active {
-            background: #fff;
-            color: #98caff;
-            border-bottom: 2px solid #98caff;
-            display: flex;
-            justify-content: center;
-            gap: 2px;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            background: none;
-            cursor: pointer;
-            font-weight: bold;
-            color: #555;
-            font-size: 0.9rem;
-            text-align: center;
-        }
-
-        .dm-unread-indicator {
-            display: inline-grid;
-            width: 18px;
-            height: 18px;
-            margin-left: 7px;
-            place-items: center;
-            border-radius: 50%;
-            background: #dc3545;
-            color: #fff;
-            font-size: 0.8rem;
-            font-weight: 800;
-            line-height: 1;
-            vertical-align: middle;
-            margin-bottom: 2px;
-        }
-
-        .online-users-panel {
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            padding: 9px 14px;
-            border-bottom: 1px solid #d5e0eb;
-            background: #f7fbff;
-            color: #315d82;
-        }
-
-        .online-users-heading {
-            flex: 0 0 auto;
-            padding-top: 5px;
-            font-size: 0.82rem;
-        }
-
-        .online-users-list {
-            display: flex;
-            flex: 1;
-            flex-wrap: wrap;
-            gap: 6px;
-            min-width: 0;
-        }
-
-        .online-user-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            max-width: 220px;
-            padding: 4px 9px;
-            overflow: hidden;
-            border: 1px solid #cfe0ee;
-            border-radius: 14px;
-            background: #fff;
-            color: #315d82;
-            font-size: 0.8rem;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            cursor: pointer;
-        }
-
-        .online-user-pill:disabled {
-            cursor: default;
-            opacity: 0.8;
-        }
-
-        .online-user-pill:not(:disabled):hover,
-        .online-user-pill:not(:disabled):focus-visible {
-            border-color: #82b4dd;
-            background: #eaf5ff;
-        }
-
-        .online-user-dot {
-            width: 8px;
-            height: 8px;
-            flex: 0 0 8px;
-            border-radius: 50%;
-            background: #2ecc71;
-            box-shadow: 0 0 0 2px #e1f7e9;
-        }
-
-        .online-users-empty {
-            padding: 4px 0;
-            color: #718399;
-            font-size: 0.8rem;
-        }
-
-        .target-id-bar {
-            padding: 10px 15px;
-            background: #f0f7ffbf;
-            border-bottom: 1px solid #e9ecef;
-            display: flex;
-            gap: 10px;
-            align-items: center;
-        }
-
-        .target-id-bar input {
-            flex: 1;
-            padding: 6px 10px;
-            font-size: 0.85rem;
-        }
-
-        .target-id-bar .dm-choose-btn {
-            position: static;
-            flex: 0 0 auto;
-            padding: 8px 10px;
-            font-size: 0.8rem;
-        }
-
-        .private-chat-list {
-            display: flex;
-            gap: 6px;
-            overflow-x: auto;
-            padding: 7px 10px;
-            border-bottom: 1px solid #d5e0eb;
-            background: #f0f7ff;
-        }
-
-        .private-chat-tab {
-            flex: 0 0 auto;
-            max-width: 220px;
-            padding: 7px 12px;
-            overflow: hidden;
-            border: 1px solid #b8d5ef;
-            border-radius: 16px;
-            background: #fff;
-            color: #315d82;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            cursor: pointer;
-        }
-
-        .private-chat-tab.active {
-            border-color: #428ed1;
-            background: #dcedff;
-            color: #124e83;
-            font-weight: 700;
-        }
-
-        .chat-messages {
-            flex: 1;
-            padding: 15px;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            background: #fafafab8;
-        }
-
-        .sent {
-            color: inherit;
-            align-self: stretch;
-        }
-
-        .received {
-            background: transparent;
-            color: inherit;
-            align-self: stretch;
-        }
-
-        .message-row {
-            position: relative;
-            display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            border-radius: 6px;
-            transition: background-color 0.2s ease;
-        }
-
-        .message-row.message-highlight {
-            background: rgba(88, 101, 242, 0.13);
-        }
-
-        .message {
-            flex: 1;
-            min-width: 0;
-            max-width: none;
-            padding: 0;
-            font-size: 0.95rem;
-            line-height: 1.4;
-            position: relative;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        .message-profile-trigger {
-            cursor: pointer;
-        }
-
-        .message-profile-trigger:hover,
-        .message-profile-trigger:focus-visible {
-            text-decoration: underline;
-            text-underline-offset: 2px;
-        }
-
-        .message-header {
-            display: flex;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 4px 6px;
-            margin-bottom: 2px;
-        }
-
-        .message-avatar {
-            position: relative;
-            display: inline-flex;
-            width: 40px;
-            height: 40px;
-            flex: 0 0 40px;
-            align-items: center;
-            justify-content: center;
-            overflow: visible;
-            border-radius: 50%;
-            color: white;
-            font-size: 1rem;
-            font-weight: bold;
-        }
-
-        .message-avatar-image {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        .presence-dot {
-            position: absolute;
-            right: -1px;
-            bottom: -1px;
-            z-index: 1;
-            width: 12px;
-            height: 12px;
-            border: 2px solid #fff;
-            border-radius: 50%;
-        }
-
-        .message-avatar .presence-dot {
-            right: 0;
-            bottom: 0;
-        }
-
-        .presence-dot.is-online {
-            background: #2ecc71;
-        }
-
-        .presence-dot.is-offline {
-            background: #9299a1;
-        }
+const express = require('express');
+const http = require('http');
+const path = require('path');
+const fs = require('fs');
+const { createHash, randomBytes, randomUUID, scryptSync, timingSafeEqual } = require('crypto');
+
+const app = express();
+const server = http.createServer(app);
+
+const { Server } = require('socket.io');
+const io = new Server(server, { 
+    cors: { origin: "*", methods: ["GET", "POST"] } 
+});
+
+// Setup local JSON file database to remember accounts and ranks
+const DB_FILE = process.env.DATABASE_FILE || (process.env.RENDER ? '/data/database.json' : path.join(__dirname, 'database.json'));
+fs.mkdirSync(path.dirname(DB_FILE), { recursive: true });
+if (!fs.existsSync(DB_FILE)) {
+    fs.writeFileSync(DB_FILE, JSON.stringify({ users: [], globalMessages: [], privateMessages: {} }, null, 2));
+}
+
+function readDB() { return JSON.parse(fs.readFileSync(DB_FILE, 'utf8')); }
+function writeDB(data) {
+    const temporaryFile = `${DB_FILE}.${process.pid}.tmp`;
+    fs.writeFileSync(temporaryFile, JSON.stringify(data, null, 2));
+    fs.renameSync(temporaryFile, DB_FILE);
+}
+function isValidUploadedImage(image) {
+    if (image === undefined || image === "") return true;
+    if (typeof image !== "string") return false;
+    const match = /^data:image\/jpeg;base64,([A-Za-z0-9+/]+={0,2})$/.exec(image);
+    return Boolean(match) && Buffer.byteLength(match[1], "base64") <= 200 * 1024;
+}
+function isValidReply(reply) {
+    return reply === undefined || reply === null || (
+        typeof reply === "object" &&
+        !Array.isArray(reply) &&
+        typeof reply.user === "string" &&
+        reply.user.trim().length > 0 &&
+        reply.user.length <= 32 &&
+        typeof reply.text === "string" &&
+        reply.text.length <= 4000 &&
+        isValidUploadedImage(reply.image) &&
+        isValidUploadedImage(reply.avatarImage) &&
+        (reply.userId === undefined || (typeof reply.userId === "string" && reply.userId.length <= 80)) &&
+        (reply.messageId === undefined || (typeof reply.messageId === "string" && reply.messageId.length <= 80))
+    );
+}
+function normalizeReply(reply) {
+    if (!reply) return null;
+    return {
+        user: reply.user.trim(),
+        userId: reply.userId || "",
+        text: reply.text,
+        image: reply.image || "",
+        avatarImage: reply.avatarImage || "",
+        messageId: reply.messageId || ""
+    };
+}
+
+app.get('/version', (req, res) => {
+    const hash = createHash('sha256');
+    for (const file of ['package.json', 'server.js', 'public/index.html', 'public/style.css']) {
+        hash.update(file);
+        hash.update(fs.readFileSync(path.join(__dirname, file)));
+    }
+    res.set('Cache-Control', 'no-store');
+    res.json({ version: hash.digest('hex') });
+});
+
+app.use(express.static(path.join(__dirname, 'public')));
+
+const onlineUsers = {};
+const globalMessages = new Map();
+const recoveryCooldowns = new Map();
+const passwordResetTokens = new Map();
+const MESSAGE_FONTS = new Set(["system-ui", "Arial", "Georgia", "monospace", "cursive"]);
+
+function hashSecretCode(secretCode, salt = randomBytes(16).toString("hex")) {
+    return {
+        salt,
+        hash: scryptSync(secretCode, salt, 64).toString("hex")
+    };
+}
+
+function isSecretCodeMatch(user, secretCode) {
+    if (typeof user.secretCodeSalt !== "string" || !/^[a-f0-9]{32}$/i.test(user.secretCodeSalt) ||
+        typeof user.secretCodeHash !== "string" ||
+        !/^[a-f0-9]{128}$/i.test(user.secretCodeHash)) return false;
+    const storedHash = Buffer.from(user.secretCodeHash, "hex");
+    const enteredHash = scryptSync(secretCode, user.secretCodeSalt, storedHash.length);
+    return timingSafeEqual(storedHash, enteredHash);
+}
+
+function clientAccount(user) {
+    const { password, secretCodeSalt, secretCodeHash, ...account } = user;
+    return {
+        ...account,
+        hasRecoveryCode: Boolean(secretCodeSalt && secretCodeHash)
+    };
+}
+
+function privateConversationId(firstUserId, secondUserId) {
+    return [String(firstUserId), String(secondUserId)].sort().join(":");
+}
+
+function emitUserJoined(user) {
+    io.emit('user joined', { username: user.username });
+}
+
+function publicUser(user) {
+    return {
+        id: user.id,
+        username: user.username,
+        displayName: user.displayName || "Prism",
+        nameColor: user.nameColor || "#202124",
+        avatarColor: user.avatarColor || "#98caff",
+        avatarImage: user.avatarImage || user.avatarUrl || "",
+        pronouns: user.pronouns || "",
+        bio: user.bio || "",
+        bannerColor: user.bannerColor || "#84c5d0",
+        bannerImage: user.bannerImage || "",
+        role: user.role || "Member"
+    };
+}
+
+io.on('connection', (socket) => {
+    console.log(`Socket synchronized: ${socket.id}`);
+    socket.emit('update user lists', onlineUsers);
+
+    // ACCOUNT REGISTRATION
+    socket.on('register user', (data, callback) => {
+        const db = readDB();
+        if (!data || typeof data.username !== "string" || !data.username.trim() ||
+            typeof data.password !== "string" || !data.password) {
+            return callback({ success: false, message: "Enter a username and password." });
+        }
+        if (typeof data.secretCode !== "string" || data.secretCode.trim().length < 4 || data.secretCode.length > 128) {
+            return callback({ success: false, message: "Choose a secret code with at least 4 characters." });
+        }
+        const userExists = db.users.find(u => u.username.toLowerCase() === data.username.toLowerCase());
         
-        .message.pinged-msg .message-text {
-            width: fit-content;
-            max-width: 100%;
-            padding: 2px 6px;
-            background-color: #ffe8a6;
-            color: #856404;
-            border-left: 4px solid #ffc107;
+        if (userExists) {
+            return callback({ success: false, message: "Username is already taken!" });
         }
 
-        .username {
-            font-weight: bold;
-            font-size: 0.95rem;
-            margin: 0;
-        }
-
-        .username-handle {
-            color: #64758a;
-            font-size: 0.78rem;
-        }
-
-        .role-owner { background-color: #dc3545; }
-        .role-admin { background-color: #168d31; }
-        .role-moderator { background-color: #e5b3f2; color: #392344; }
-
-        .role-badge {
-            font-size: 0.7rem;
-            font-weight: bold;
-            padding: 1px 4px;
-            border-radius: 3px;
-            margin-left: 4px;
-            color: white;
-            vertical-align: middle;
-        }
-
-        .msg-timestamp {
-            font-size: 0.68rem;
-            opacity: 0.65;
-            font-weight: normal;
-            margin-left: 2px;
-        }
-
-        .message-text {
-            white-space: pre-wrap;
-            overflow-wrap: anywhere;
-        }
-
-        .chat-embedded-img {
-            max-width: 100%;
-            max-height: 250px;
-            border-radius: 8px;
-            margin-top: 5px;
-            display: block;
-        }
-
-        .chat-message-image {
-            display: block;
-            max-width: min(100%, 560px);
-            max-height: 100px;
-            margin-top: 6px;
-            border-radius: 8px;
-            object-fit: contain;
-        }
-
-        .chat-message-image[role="button"] {
-            cursor: zoom-in;
-        }
-
-        .image-viewer {
-            position: fixed;
-            inset: 0;
-            z-index: 30000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 48px 20px 20px;
-            background: rgba(8, 12, 18, 0.92);
-        }
-
-        .image-viewer img {
-            max-width: 96vw;
-            max-height: 92vh;
-            object-fit: contain;
-        }
-
-        .image-viewer-close {
-            position: absolute;
-            top: 12px;
-            right: 18px;
-            width: 42px;
-            height: 42px;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.14);
-            color: #fff;
-            font-size: 2rem;
-            cursor: pointer;
-        }
-
-        .image-viewer-close:hover,
-        .image-viewer-close:focus-visible {
-            background: rgba(255, 255, 255, 0.28);
-        }
-
-        .reply-context-line {
-            display: flex;
-            align-items: center;
-            width: fit-content;
-            max-width: 100%;
-            gap: 7px;
-            margin: 0 0 5px;
-            padding: 4px 8px 4px 5px;
-            border: 0;
-            border-left: 3px solid #35c796;
-            border-radius: 0 6px 6px 0;
-            background: #edf2f7;
-            color: #59636f;
-            font: inherit;
-            font-size: 0.78rem;
-            text-align: left;
-            cursor: pointer;
-        }
-
-        .reply-context-line:hover .reply-context-text {
-            color: #1b2531;
-        }
-
-        .reply-context-connector {
-            display: none;
-        }
-
-        .reply-context-avatar {
-            width: 19px;
-            height: 19px;
-            flex: 0 0 19px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        .reply-context-body {
-            display: flex;
-            min-width: 0;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .reply-context-arrow {
-            flex: 0 0 auto;
-            color: #35a97d;
-            font-size: 0.95rem;
-            font-weight: 700;
-        }
-
-        .reply-context-user {
-            flex: 0 0 auto;
-            color: #1686bb;
-            font-weight: 700;
-        }
-
-        .reply-context-text {
-            overflow: hidden;
-            max-width: min(440px, 55vw);
-            color: #65707c;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .reply-context-image {
-            width: 32px;
-            height: 32px;
-            flex: 0 0 32px;
-            border-radius: 4px;
-            object-fit: cover;
-        }
-
-        .message-actions {
-            position: absolute;
-            top: -13px;
-            right: 8px;
-            z-index: 2;
-            display: flex;
-            padding: 3px;
-            border: 1px solid #dfe3e8;
-            border-radius: 8px;
-            background: #fff;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.16);
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(3px);
-            transition: opacity 0.12s ease, transform 0.12s ease, visibility 0.12s;
-        }
-
-        .message-row:hover .message-actions,
-        .message-row:focus-within .message-actions {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-
-        .message-action-button {
-            display: grid;
-            width: 30px;
-            height: 30px;
-            place-items: center;
-            border: 0;
-            border-radius: 5px;
-            background: transparent;
-            color: #59636f;
-            font-size: 1.35rem;
-            line-height: 1;
-            cursor: pointer;
-        }
-
-        .message-action-button svg {
-            display: block;
-            width: 24px;
-            height: 24px;
-        }
-
-        .message-action-button .fa {
-            font-size: 20px;
-        }
-
-        .message-action-button:hover,
-        .message-action-button:focus-visible {
-            background: #eef0f3;
-            color: #303943;
-        }
-
-        .message-delete-button:hover,
-        .message-delete-button:focus-visible {
-            background: #fff0f0;
-            color: #c62828;
-        }
-
-        @media (hover: none) {
-            .message-actions {
-                opacity: 1;
-                visibility: visible;
-                transform: none;
-            }
-        }
-
-        .reply-banner-indicator {
-            background: #e1efff;
-            padding: 6px 15px;
-            font-size: 0.8rem;
-            color: #034b8c;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-top: 1px solid #bce0ff;
-        }
-
-        .chat-input-area {
-            position: relative;
-            display: flex;
-            padding: 15px;
-            border-top: 1px solid #e9ecef;
-            background: #fff;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .mention-suggestions {
-            position: absolute;
-            z-index: 20;
-            right: 55px;
-            bottom: calc(100% - 5px);
-            left: 60px;
-            max-height: 220px;
-            overflow-y: auto;
-            padding: 5px;
-            border: 1px solid #b8d5ef;
-            border-radius: 8px;
-            background: #fff;
-            box-shadow: 0 4px 14px rgba(20, 50, 80, 0.2);
-        }
-
-        .mention-suggestion {
-            display: block;
-            width: 100%;
-            padding: 8px 10px;
-            border-radius: 5px;
-            background: transparent;
-            color: #315d82;
-            text-align: left;
-            cursor: pointer;
-        }
-
-        .mention-suggestion:hover,
-        .mention-suggestion:focus-visible {
-            background: #e7f2ff;
-        }
-
-        .chat-system-event {
-            align-self: center;
-            padding: 3px 10px;
-            color: #657b93;
-            font-size: 0.82rem;
-            font-style: italic;
-        }
-
-        .pending-image-preview {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 8px 15px;
-            border-top: 1px solid #e9ecef;
-            background: #fff;
-            color: #333;
-            font-size: 0.85rem;
-        }
-
-        .pending-image-preview img {
-            width: 48px;
-            height: 48px;
-            border-radius: 6px;
-            object-fit: cover;
-        }
-
-        .pending-image-preview span {
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .pending-image-preview button {
-            width: 30px;
-            height: 30px;
-            margin-left: auto;
-            border-radius: 6px;
-            background: #e9ecef;
-            color: #333;
-            font-size: 1.1rem;
-            cursor: pointer;
-        }
-
-        .plus-img-btn {
-            background: #9cc8ff38;
-            color: #3f9cff;
-            border-radius: 8px;
-            width: 42px;
-            height: 45px;
-            font-size: 1.5rem;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-shrink: 0;
-            border: none;
-            transition: background 0.2s;
-            border-radius: 8px;
-        }
+        // Generate sequential IDs starting at 1001
+        const assignedId = String(db.users.length + 1001);
         
+        // CRITICAL CHECK: Force ID 1002 to always be the Owner rank
+        const assignedRole = (assignedId === "1002") ? "Owner" : "Member";
+        const secretCode = hashSecretCode(data.secretCode.trim());
 
-        .chat-input-area input {
-            flex: 1;
-            min-width: 0;
-            padding: 12px;
-            width: auto;
-            position: static;
-            border-radius: 8px;
-        }
+        const newUser = {
+            username: data.username,
+            password: data.password,
+            id: assignedId,
+            role: assignedRole,
+            avatarColor: "#98caff",
+            avatarImage: "",
+            displayName: "Prism",
+            pronouns: "",
+            bio: "",
+            bannerColor: "#84c5d0",
+            bannerImage: "",
+            friends: [],
+            friendRequestsSent: [],
+            friendRequestsReceived: [],
+            messageColor: "#202124",
+            nameColor: "#202124",
+            messageFont: "system-ui",
+            secretCodeSalt: secretCode.salt,
+            secretCodeHash: secretCode.hash
+        };
 
-        .chat-input-area button[type="submit"] {
-            background: none;
-            color: white;
-            border: none;
-            padding: 10px;
-            height: 42px;
-            width: 42px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 1rem;
-            flex-shrink: 0;
-            position: static;
-        }
+        db.users.push(newUser);
+        writeDB(db);
 
-        .chat-input-area button[type="submit"] svg {
-            display: block;
-            width: 22px;
-            height: 22px;
-            margin: auto;
-        }
+        onlineUsers[socket.id] = {
+            username: newUser.username,
+            id: newUser.id,
+            role: newUser.role,
+            avatarColor: newUser.avatarColor,
+            avatarImage: newUser.avatarImage,
+            displayName: newUser.displayName,
+            nameColor: newUser.nameColor,
+            pronouns: newUser.pronouns,
+            bio: newUser.bio,
+            bannerColor: newUser.bannerColor,
+            bannerImage: newUser.bannerImage,
+            messageColor: newUser.messageColor,
+            messageFont: newUser.messageFont
+        };
+        socket.join(`user:${newUser.id}`);
+        callback({ success: true, user: clientAccount(newUser), socketId: socket.id });
+        io.emit('update user lists', onlineUsers);
+        emitUserJoined(newUser);
+    });
 
-        .res-wrap {
-            display: flex;
-            flex-direction: row;
-            gap: 6px;
-            justify-content: flex-start;
-            margin-top: 15px;
-        }
+    // ACCOUNT LOGIN
+    socket.on('login user', (data, callback) => {
+        const db = readDB();
+        const user = db.users.find(u => u.username.toLowerCase() === data.username.toLowerCase() && u.password === data.password);
         
-        .ping-chip {
-            background: rgba(0,0,0,0.1);
-            padding: 1px 3px;
-            border-radius: 3px;
-            font-weight: bold;
+        if (!user) {
+            return callback({ success: false, message: "Invalid username or password!" });
         }
 
-        .profile-btn {
-            position: absolute;
-            left: 15px;
-            top: 15px;
-            background: #6d99c7;
-            color: white;
-            border-radius: 4px;
-            padding: 4px 8px;
-            font-size: 0.75rem;
-            font-weight: bold;
-            cursor: pointer;
-            display: flex;
+        // CRITICAL ENFORCEMENT: Force check on login to guarantee 1002 is Owner
+        let accountUpdated = false;
+        if (user.id === "1002" && user.role !== "Owner") {
+            user.role = "Owner";
+            accountUpdated = true;
         }
-
-        .friends-btn {
-            left: 598px;
-            align-content: center;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-
-        .settings-btn {
-        left: 1156px;
-        }
-
-        .settings-panel {
-            width: min(100%, 380px);
-        }
-
-        .modal-view {
-            position: fixed;
-            inset: 0;
-            z-index: 20000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 12px;
-            background: rgba(0, 0, 0, 0.4);
-        }
-
-        .profile-panel {
-            width: min(100%, 430px);
-            max-height: min(94vh, 900px);
-            overflow-y: auto;
-            padding: 20px 18px;
-            border: 1px solid #d5d5d5;
-            border-radius: 12px;
-            background: #fff;
-            color: #111;
-        }
-
-        .profile-panel-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        .profile-panel-header h2 {
-            font-size: 1.3rem;
-            color: #00549d;
-        }
-
-        .profile-close-btn {
-            width: 36px;
-            height: 36px;
-            border: 1px solid #94ddff;
-            border-radius: 9px;
-            background: #fff;
-            color: #00207f;
-            font-size: 1.3rem;
-            cursor: pointer;
-        }
-
-        .profile-intro {
-            margin-bottom: 20px;
-            font-size: 0.95rem;
-            line-height: 1.45;
-        }
-
-        .profile-session-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            margin: -10px 0 16px;
-            padding: 9px 10px;
-            border: 1px solid #d5dce5;
-            border-radius: 8px;
-            background: #f5f8fc;
-            font-size: 0.85rem;
-        }
-
-        .profile-session-row code,
-        .profile-intro code {
-            overflow-wrap: anywhere;
-            color: #1a5b88;
-            font-family: monospace;
-        }
-
-        .profile-save-status {
-            min-height: 1.2em;
-            margin: 12px 0 16px;
-            color: #225d38;
-            font-size: 0.85rem;
-        }
-
-        .profile-section-title {
-            margin-bottom: 9px;
-            font-size: 1rem;
-            color: #2b9cff;
-        }
-
-        .profile-settings-title {
-            margin-top: 16px;
-            padding-top: 14px;
-            border-top: 1px solid #e2e6eb;
-        }
-
-        .profile-message-sample {
-            padding: 10px 12px;
-            border: 1px solid #d5dce5;
-            border-radius: 8px;
-            background: #f5f8fc;
-            font-size: 0.95rem;
-        }
-
-        .profile-friends-section {
-            margin-top: 18px;
-            padding-top: 14px;
-            border-top: 1px solid #e2e6eb;
-        }
-
-        .profile-friends-status {
-            min-height: 1.3em;
-            color: #586574;
-            font-size: 0.85rem;
-        }
-
-        .profile-friends-list {
-            display: grid;
-            gap: 6px;
-            margin-top: 6px;
-            margin-bottom: 26px;
-        }
-
-        .profile-friend {
-            width: 100%;
-            padding: 9px 10px;
-            border: 1px solid #d5dce5;
-            border-radius: 7px;
-            background: #f5f8fc;
-            color: #243142;
-            text-align: left;
-            cursor: pointer;
-        }
-
-        .profile-friend {
-            display: flex;
-            align-items: center;
-            gap: 9px;
-        }
-
-        .friend-presence-dot {
-            width: 10px;
-            height: 10px;
-            flex: 0 0 10px;
-            border-radius: 50%;
-        }
-
-        .friend-presence-dot.is-online {
-            background: #2ecc71;
-        }
-
-        .friend-presence-dot.is-offline {
-            background: #9299a1;
-        }
-
-        .friends-panel {
-            max-height: min(80vh, 640px);
-            overflow-y: auto;
-        }
-
-        .friend-requests-section {
-            margin: 14px 0;
-        }
-
-        .friend-requests-section .profile-section-title {
-            margin-bottom: 6px;
-        }
-
-        .friend-request-row {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .friend-request-row .profile-friend {
-            min-width: 0;
-            flex: 1;
-        }
-
-        .friend-request-row .profile-action-btn {
-            margin: 0;
-            white-space: nowrap;
-        }
-
-        .add-friend-by-id-form {
-            margin-bottom: 12px;
-        }
-
-        .add-friend-by-id-form label {
-            display: block;
-            margin-bottom: 6px;
-            font-weight: 600;
-        }
-
-        .add-friend-by-id-controls {
-            display: flex;
-            gap: 8px;
-        }
-
-        .add-friend-by-id-controls input {
-            min-width: 0;
-            flex: 1;
-            padding: 9px 10px;
-            border: 1px solid #d5dce5;
-            border-radius: 7px;
-            background: #fff;
-            color: #243142;
-            font: inherit;
-        }
-
-        .add-friend-by-id-controls .profile-action-btn {
-            margin: 0;
-        }
-
-        .profile-friend:hover {
-            background: #e8f2ff;
-        }
-
-        .profile-role-controls {
-            margin-top: 18px;
-            padding-top: 14px;
-            border-top: 1px solid #e2e6eb;
-        }
-
-        .profile-role-controls label {
-            display: block;
-            margin-bottom: 6px;
-            color: #4d6b8f;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        .profile-role-controls select {
-            margin-bottom: 8px;
-        }
-
-        .profile-preview-card {
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 20px;
-            border: 1px solid #111;
-            border-radius: 12px;
-            background: #fff;
-        }
-
-        .profile-preview-banner {
-            height: 84px;
-            background-position: center;
-            background-size: cover;
-        }
-
-        .profile-preview-avatar {
-            position: absolute;
-            top: 57px;
-            left: 15px;
-            display: flex;
-            width: 60px;
-            height: 60px;
-            align-items: center;
-            justify-content: center;
-            overflow: visible;
-            border: 3px solid #fff;
-            border-radius: 50%;
-            background: #707070;
-            color: white;
-            font-size: 1.15rem;
-        }
-
-        .profile-preview-avatar img {
-            position: absolute;
-            inset: 0;
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        .profile-preview-details {
-            min-height: 112px;
-            padding: 39px 14px 12px;
-        }
-
-        .profile-preview-name-row {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: baseline;
-            gap: 4px 8px;
-            margin-bottom: 8px;
-        }
-
-        .profile-preview-name-row strong {
-            font-size: 1rem;
-        }
-
-        .profile-preview-name-row span {
-            color: #666;
-            font-size: 0.85rem;
-        }
-
-        #profilePreviewBio {
-            overflow-wrap: anywhere;
-            color: #444;
-            font-size: 0.9rem;
-            white-space: pre-wrap;
-        }
-
-        .profile-fields {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .profile-fields label {
-            margin-top: 2px;
-            font-size: 0.83rem;
-            font-weight: 600;
-            color: #002f59;
-        }
-
-        .profile-fields input:not([type="file"]),
-        .profile-fields textarea {
-            width: 100%;
-            min-height: 42px;
-            padding: 9px 10px;
-            border: 1px solid #003c7b;
-            border-radius: 9px;
-            background: #fff;
-            color: #111;
-            font-size: 0.95rem;
-        }
-
-        .profile-fields input[type="color"] {
-            height: 42px;
-            padding: 5px;
-        }
-
-        .profile-field-hint {
-            margin-top: -5px;
-            color: #687789;
-            font-size: 0.78rem;
-        }
-
-        .profile-file-control {
-            position: relative;
-            display: flex;
-            min-width: 0;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .profile-file-control input[type="file"] {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            min-width: 0;
-            min-height: 0;
-            padding: 0;
-            border: 0;
-            font-size: 0;
-            overflow: hidden;
-            opacity: 0;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            clip-path: inset(50%);
-        }
-
-        .profile-file-button {
-            display: inline-flex;
-            min-height: 34px;
-            flex: 0 0 auto;
-            align-items: center;
-            padding: 6px 10px;
-            border: 1px solid #111;
-            border-radius: 6px;
-            background: #f1f1f1;
-            color: #111;
-            font-size: 0.85rem;
-            cursor: pointer;
-        }
-
-        .profile-file-control input[type="file"]:focus-visible + .profile-file-button {
-            outline: 2px solid #1672d4;
-            outline-offset: 2px;
-        }
-
-        .profile-file-name {
-            min-width: 0;
-            overflow: hidden;
-            color: #444;
-            font-size: 0.85rem;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-        }
-
-        .profile-fields textarea {
-            min-height: 82px;
-            resize: vertical;
-        }
-
-        .profile-panel-actions {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            margin-top: 14px;
-        }
-
-        .profile-action-btn {
-            min-height: 38px;
-            padding: 8px 14px;
-            border: 1px solid #b5eaff;
-            border-radius: 9px;
-            background: #c8e1ff;
-            color: #111;
-            font-weight: 600;
-            cursor: pointer;
-        }
-
-        .user-pronouns {
-            color: #666;
-            font-size: 0.78rem;
-        }
-
-        @media (max-width: 480px) {
-            .online-users-panel {
-                gap: 8px;
-                padding: 8px 10px;
+        for (const [field, defaultValue] of [
+            ["displayName", "Prism"],
+            ["avatarColor", "#98caff"],
+            ["avatarImage", user.avatarUrl || ""],
+            ["pronouns", ""],
+            ["bio", ""],
+            ["bannerColor", "#84c5d0"],
+            ["bannerImage", ""],
+            ["friends", []],
+            ["friendRequestsSent", []],
+            ["friendRequestsReceived", []],
+            ["messageColor", "#202124"],
+            ["nameColor", "#202124"],
+            ["messageFont", "system-ui"]
+        ]) {
+            if (!user[field]) {
+                user[field] = defaultValue;
+                accountUpdated = true;
             }
+        }
+        if (!/^#[0-9a-f]{6}$/i.test(user.messageColor) || !MESSAGE_FONTS.has(user.messageFont)) {
+            user.messageColor = "#202124";
+            user.messageFont = "system-ui";
+            accountUpdated = true;
+        }
+        if (typeof user.nameColor !== "string" || !/^#[0-9a-f]{6}$/i.test(user.nameColor)) {
+            user.nameColor = "#202124";
+            accountUpdated = true;
+        }
+        if (accountUpdated) writeDB(db);
 
-            .online-users-heading {
-                font-size: 0.76rem;
-            }
+        onlineUsers[socket.id] = {
+            username: user.username,
+            id: user.id,
+            role: user.role,
+            avatarColor: user.avatarColor || "#98caff",
+            avatarImage: user.avatarImage || user.avatarUrl || "",
+            displayName: user.displayName || "",
+            pronouns: user.pronouns || "",
+            bio: user.bio || "",
+            bannerColor: user.bannerColor || "#84c5d0",
+            bannerImage: user.bannerImage || "",
+            messageColor: user.messageColor || "#202124",
+            nameColor: user.nameColor || "#202124",
+            messageFont: user.messageFont || "system-ui",
+            friends: Array.isArray(user.friends) ? user.friends : [],
+            friendRequestsSent: Array.isArray(user.friendRequestsSent) ? user.friendRequestsSent : [],
+            friendRequestsReceived: Array.isArray(user.friendRequestsReceived) ? user.friendRequestsReceived : []
+        };
+        socket.join(`user:${user.id}`);
+        callback({ success: true, user: clientAccount(user), socketId: socket.id });
+        io.emit('update user lists', onlineUsers);
+        emitUserJoined(user);
+    });
 
-            .online-users-list {
-                gap: 4px;
-            }
+    socket.on('verify recovery code', (data, callback) => {
+        if (!data || typeof data.username !== "string" || !data.username.trim() ||
+            typeof data.secretCode !== "string" || !data.secretCode.trim() || data.secretCode.length > 128) {
+            return callback({ success: false, message: "Enter your username and secret code." });
+        }
+        const username = data.username.trim();
+        const recoveryKey = username.toLowerCase();
+        const now = Date.now();
+        const retryAt = recoveryCooldowns.get(recoveryKey) || 0;
+        if (retryAt > now) {
+            return callback({
+                success: false,
+                retryAfter: Math.ceil((retryAt - now) / 1000),
+                message: `Please try again in ${Math.ceil((retryAt - now) / 1000)} seconds.`
+            });
+        }
 
-            .target-id-bar {
-                flex-wrap: wrap;
-            }
+        const db = readDB();
+        const user = db.users.find(account => account.username.toLowerCase() === recoveryKey);
+        if (!user || !user.secretCodeSalt || !user.secretCodeHash) {
+            recoveryCooldowns.set(recoveryKey, now + 60_000);
+            return callback({
+                success: false,
+                retryAfter: 60,
+                message: "The account or secret code is incorrect. Please try again in 1 minute. Older accounts may need to set a recovery code after signing in."
+            });
+        }
+        if (!isSecretCodeMatch(user, data.secretCode.trim())) {
+            recoveryCooldowns.set(recoveryKey, now + 60_000);
+            return callback({
+                success: false,
+                retryAfter: 60,
+                message: "That secret code is incorrect. Please try again in 1 minute."
+            });
+        }
 
-            .target-id-bar label {
-                width: 100%;
-            }
+        recoveryCooldowns.delete(recoveryKey);
+        const resetToken = randomBytes(32).toString("hex");
+        passwordResetTokens.set(resetToken, { userId: user.id, expiresAt: now + 10 * 60_000 });
+        callback({ success: true, resetToken });
+    });
 
-            .target-id-bar input {
-                min-width: 0;
-            }
+    socket.on('update recovery code', (data, callback) => {
+        const requester = onlineUsers[socket.id];
+        if (!requester) return callback({ success: false, message: "Please sign in again." });
+        if (!data || typeof data.secretCode !== "string" ||
+            data.secretCode.trim().length < 4 || data.secretCode.length > 128) {
+            return callback({ success: false, message: "Choose a secret code with 4 to 128 characters." });
+        }
+        const db = readDB();
+        const user = db.users.find(account => account.id === requester.id);
+        if (!user) return callback({ success: false, message: "Your account could not be found." });
+        const secretCode = hashSecretCode(data.secretCode.trim());
+        user.secretCodeSalt = secretCode.salt;
+        user.secretCodeHash = secretCode.hash;
+        try {
+            writeDB(db);
+        } catch {
+            return callback({ success: false, message: "Your recovery code could not be saved." });
+        }
+        recoveryCooldowns.delete(user.username.toLowerCase());
+        for (const [token, session] of passwordResetTokens) {
+            if (session.userId === user.id) passwordResetTokens.delete(token);
+        }
+        callback({ success: true });
+    });
 
-            .modal-view {
-                padding: 0;
-            }
+    socket.on('reset account password', (data, callback) => {
+        if (!data || typeof data.resetToken !== "string" || typeof data.password !== "string" ||
+            data.password.length < 10 || data.password.length > 128) {
+            return callback({ success: false, message: "Your new password must be between 10 and 128 characters." });
+        }
+        const resetSession = passwordResetTokens.get(data.resetToken);
+        if (!resetSession || resetSession.expiresAt <= Date.now()) {
+            passwordResetTokens.delete(data.resetToken);
+            return callback({ success: false, message: "This password reset has expired. Verify your secret code again." });
+        }
 
-            .profile-panel {
-                width: 100%;
-                height: 100%;
-                max-height: 100%;
-                border: 0;
-                border-radius: 0;
-                padding: 20px 18px;
+        const db = readDB();
+        const user = db.users.find(account => account.id === resetSession.userId);
+        if (!user) {
+            passwordResetTokens.delete(data.resetToken);
+            return callback({ success: false, message: "That account could not be found." });
+        }
+        user.password = data.password;
+        try {
+            writeDB(db);
+        } catch {
+            return callback({ success: false, message: "Your new password could not be saved. Please try again." });
+        }
+        for (const [token, session] of passwordResetTokens) {
+            if (session.userId === user.id) passwordResetTokens.delete(token);
+        }
+        callback({ success: true, username: user.username });
+    });
+
+    socket.on('get private conversations', callback => {
+        const requester = onlineUsers[socket.id];
+        if (!requester) return callback({ success: false, message: "Please sign in again." });
+        const db = readDB();
+        const conversations = db.privateMessages && typeof db.privateMessages === "object"
+            ? db.privateMessages
+            : {};
+        const results = [];
+        for (const [conversationId, messages] of Object.entries(conversations)) {
+            const participantIds = conversationId.split(":");
+            if (!participantIds.includes(String(requester.id)) || !Array.isArray(messages)) continue;
+            const peerId = participantIds.find(id => id !== String(requester.id));
+            const peer = db.users.find(account => account.id === peerId);
+            if (!peer) continue;
+            results.push({
+                user: publicUser(peer),
+                messages: messages.filter(message => message && typeof message === "object")
+            });
+        }
+        callback({ success: true, conversations: results });
+    });
+
+    socket.on('update profile parameters', (data, callback) => {
+        const onlineUser = onlineUsers[socket.id];
+        if (!onlineUser) {
+            return callback({ success: false, message: "Please log in again before updating your profile." });
+        }
+        if (!data || typeof data !== "object") {
+            return callback({ success: false, message: "Invalid profile details." });
+        }
+
+        const db = readDB();
+        const user = db.users.find(account => account.id === onlineUser.id);
+        if (!user) {
+            return callback({ success: false, message: "Could not find your account. Please log in again." });
+        }
+
+        for (const [field, label] of [["avatarImage", "Profile picture"], ["bannerImage", "Banner image"]]) {
+            const imageData = data[field];
+            if (imageData === undefined || imageData === "") continue;
+            if (!isValidUploadedImage(imageData)) {
+                return callback({ success: false, message: `${label} is invalid or too large. Please choose another image.` });
             }
         }
 
-.profile-btn span {
-    margin-top: 4px;
-}
+        for (const [field, maxLength] of [["displayName", 32], ["pronouns", 40], ["bio", 160]]) {
+            if (data[field] !== undefined && (typeof data[field] !== "string" || data[field].trim().length > maxLength)) {
+                return callback({ success: false, message: `Please keep ${field === "displayName" ? "your display name" : field} within ${maxLength} characters.` });
+            }
+        }
+        if (data.messageColor !== undefined && (typeof data.messageColor !== "string" || !/^#[0-9a-f]{6}$/i.test(data.messageColor))) {
+            return callback({ success: false, message: "Choose a valid message color." });
+        }
+        if (data.nameColor !== undefined && (typeof data.nameColor !== "string" || !/^#[0-9a-f]{6}$/i.test(data.nameColor))) {
+            return callback({ success: false, message: "Choose a valid name color." });
+        }
+        if (data.avatarColor !== undefined && (typeof data.avatarColor !== "string" || !/^#[0-9a-f]{6}$/i.test(data.avatarColor))) {
+            return callback({ success: false, message: "Choose a valid profile picture color." });
+        }
+        if (data.messageFont !== undefined && !MESSAGE_FONTS.has(data.messageFont)) {
+            return callback({ success: false, message: "Choose a supported message font." });
+        }
 
-.profile-btn svg {
-    margin-right: 5px;
-}
+        const bannerColor = typeof data.bannerColor === "string" && /^#[0-9a-f]{6}$/i.test(data.bannerColor)
+            ? data.bannerColor
+            : (user.bannerColor || "#84c5d0");
+        user.displayName = data.displayName === undefined ? (user.displayName || "Prism") : (data.displayName.trim() || "Prism");
+        user.pronouns = data.pronouns === undefined ? (user.pronouns || "") : data.pronouns.trim();
+        user.bio = data.bio === undefined ? (user.bio || "") : data.bio.trim();
+        user.bannerColor = bannerColor;
+        user.avatarColor = data.avatarColor === undefined
+            ? (user.avatarColor || "#98caff")
+            : data.avatarColor;
+        user.avatarImage = data.avatarImage === undefined ? (user.avatarImage || user.avatarUrl || "") : data.avatarImage;
+        user.avatarUrl = "";
+        user.bannerImage = data.bannerImage === undefined ? (user.bannerImage || "") : data.bannerImage;
+        user.messageColor = data.messageColor === undefined ? (user.messageColor || "#202124") : data.messageColor;
+        user.nameColor = data.nameColor === undefined ? (user.nameColor || "#202124") : data.nameColor;
+        user.messageFont = data.messageFont === undefined ? (user.messageFont || "system-ui") : data.messageFont;
+        try {
+            writeDB(db);
+        } catch {
+            return callback({ success: false, message: "Your profile could not be written to storage. Please check the server's database storage and try again." });
+        }
 
-.quick-links {
-    display: flex;
-    /* justify-content: flex-end; */
-}
+        for (const activeUser of Object.values(onlineUsers)) {
+            if (String(activeUser.id) !== String(user.id)) continue;
+            activeUser.avatarColor = user.avatarColor;
+            activeUser.avatarImage = user.avatarImage;
+            activeUser.displayName = user.displayName;
+            activeUser.pronouns = user.pronouns;
+            activeUser.bio = user.bio;
+            activeUser.bannerColor = user.bannerColor;
+            activeUser.bannerImage = user.bannerImage;
+            activeUser.messageColor = user.messageColor;
+            activeUser.nameColor = user.nameColor;
+            activeUser.messageFont = user.messageFont;
+        }
+        callback({ success: true, user: clientAccount(user) });
+        io.emit('update user lists', onlineUsers);
+    });
 
-#messageInput:focus {
-    border: #000000;
-}
+    socket.on('change user role', (data, callback) => {
+        const requester = onlineUsers[socket.id];
+        if (!requester || !data || typeof data.userId !== "string" || typeof data.role !== "string") {
+            return callback({ success: false, message: "Invalid role change request." });
+        }
+        if (!["Owner", "Admin"].includes(requester.role)) {
+            return callback({ success: false, message: "Only an owner or admin can change roles." });
+        }
+        if (data.userId === requester.id) {
+            return callback({ success: false, message: "You cannot change your own role." });
+        }
+        const allowedRoles = requester.role === "Owner"
+            ? ["Member", "Moderator", "Admin"]
+            : ["Member", "Moderator"];
+        if (!allowedRoles.includes(data.role)) {
+            return callback({ success: false, message: "You cannot assign that role." });
+        }
 
-::placeholder {
-    color: #81c4ff;
-}
+        const db = readDB();
+        const target = db.users.find(account => account.id === data.userId);
+        if (!target) {
+            return callback({ success: false, message: "That account could not be found." });
+        }
+        if (target.role === "Owner" || (requester.role !== "Owner" && target.role === "Admin")) {
+            return callback({ success: false, message: "You cannot change that user's role." });
+        }
 
-html[data-theme="dark"] body {
-    background: linear-gradient(120deg, #090f1b, #111b2b 55%, #0c1522);
-    color: #e5eaf2;
-}
+        target.role = data.role;
+        try {
+            writeDB(db);
+        } catch {
+            return callback({ success: false, message: "The role could not be saved." });
+        }
+        for (const activeUser of Object.values(onlineUsers)) {
+            if (activeUser.id === target.id) activeUser.role = target.role;
+        }
+        io.emit('update user lists', onlineUsers);
+        callback({ success: true, role: target.role });
+    });
 
-html[data-theme="dark"] .chat-container {
-    background: #111827;
-    color: #e5eaf2;
-}
+    socket.on('update friend', (data, callback) => {
+        const onlineUser = onlineUsers[socket.id];
+        if (!onlineUser || !data || typeof data.userId !== "string" || typeof data.add !== "boolean") {
+            return callback({ success: false, message: "Could not update your friend list." });
+        }
+        const targetUserId = data.userId.trim();
+        if (targetUserId === String(onlineUser.id)) {
+            return callback({ success: false, message: "You cannot add yourself as a friend." });
+        }
+        const db = readDB();
+        const user = db.users.find(account => String(account.id) === String(onlineUser.id));
+        const friend = db.users.find(account => String(account.id) === targetUserId);
+        if (!user || !friend) {
+            return callback({ success: false, message: "That account could not be found." });
+        }
+        user.friends = Array.isArray(user.friends) ? user.friends : [];
+        friend.friends = Array.isArray(friend.friends) ? friend.friends : [];
+        user.friendRequestsSent = Array.isArray(user.friendRequestsSent) ? user.friendRequestsSent : [];
+        user.friendRequestsReceived = Array.isArray(user.friendRequestsReceived) ? user.friendRequestsReceived : [];
+        friend.friendRequestsSent = Array.isArray(friend.friendRequestsSent) ? friend.friendRequestsSent : [];
+        friend.friendRequestsReceived = Array.isArray(friend.friendRequestsReceived) ? friend.friendRequestsReceived : [];
+        if (data.add) {
+            if (user.friends.some(id => String(id) === String(friend.id))) {
+                return callback({ success: true, status: "friends", friends: user.friends, friend: publicUser(friend) });
+            }
+            if (user.friendRequestsSent.some(id => String(id) === String(friend.id))) {
+                return callback({ success: true, status: "pending", friends: user.friends, friend: publicUser(friend) });
+            }
+            if (user.friendRequestsReceived.some(id => String(id) === String(friend.id))) {
+                return callback({ success: false, status: "incoming", message: "This person already sent you a request. Accept it in your Friends list." });
+            }
+            user.friendRequestsSent.push(String(friend.id));
+            friend.friendRequestsReceived.push(String(user.id));
+        } else {
+            user.friends = user.friends.filter(id => String(id) !== String(friend.id));
+            friend.friends = friend.friends.filter(id => String(id) !== String(user.id));
+        }
+        try {
+            writeDB(db);
+        } catch {
+            return callback({ success: false, message: data.add ? "Your friend request could not be sent." : "Your friend list could not be saved." });
+        }
+        onlineUser.friends = user.friends;
+        onlineUser.friendRequestsSent = user.friendRequestsSent;
+        onlineUser.friendRequestsReceived = user.friendRequestsReceived;
+        if (data.add) {
+            io.to(`user:${friend.id}`).emit('friend request received', { from: publicUser(user) });
+        } else {
+            io.to(`user:${friend.id}`).emit('friend list updated', { userId: friend.id, friends: friend.friends });
+        }
+        callback({
+            success: true,
+            friends: user.friends,
+            friend: publicUser(friend),
+            status: data.add ? "sent" : "removed",
+            friendRequestsSent: user.friendRequestsSent,
+            friendRequestsReceived: user.friendRequestsReceived
+        });
+    });
 
-html[data-theme="dark"] #authTitle,
-html[data-theme="dark"] #authDesc,
-html[data-theme="dark"] #loginForm > label {
-    color: #d7e5f5 !important;
-}
+    socket.on('respond friend request', (data, callback) => {
+        const onlineUser = onlineUsers[socket.id];
+        if (!onlineUser || !data || typeof data.userId !== "string" || typeof data.accept !== "boolean") {
+            return callback({ success: false, message: "Could not respond to that friend request." });
+        }
+        const db = readDB();
+        const user = db.users.find(account => String(account.id) === String(onlineUser.id));
+        const requester = db.users.find(account => String(account.id) === data.userId.trim());
+        if (!user || !requester) return callback({ success: false, message: "That account could not be found." });
+        user.friends = Array.isArray(user.friends) ? user.friends : [];
+        requester.friends = Array.isArray(requester.friends) ? requester.friends : [];
+        user.friendRequestsReceived = Array.isArray(user.friendRequestsReceived) ? user.friendRequestsReceived : [];
+        user.friendRequestsSent = Array.isArray(user.friendRequestsSent) ? user.friendRequestsSent : [];
+        requester.friendRequestsSent = Array.isArray(requester.friendRequestsSent) ? requester.friendRequestsSent : [];
+        requester.friendRequestsReceived = Array.isArray(requester.friendRequestsReceived) ? requester.friendRequestsReceived : [];
+        if (!user.friendRequestsReceived.some(id => String(id) === String(requester.id)) ||
+            !requester.friendRequestsSent.some(id => String(id) === String(user.id))) {
+            return callback({ success: false, message: "That friend request is no longer available." });
+        }
+        user.friendRequestsReceived = user.friendRequestsReceived.filter(id => String(id) !== String(requester.id));
+        requester.friendRequestsSent = requester.friendRequestsSent.filter(id => String(id) !== String(user.id));
+        if (data.accept) {
+            if (!user.friends.some(id => String(id) === String(requester.id))) user.friends.push(String(requester.id));
+            if (!requester.friends.some(id => String(id) === String(user.id))) requester.friends.push(String(user.id));
+        }
+        try {
+            writeDB(db);
+        } catch {
+            return callback({ success: false, message: "Your response could not be saved." });
+        }
+        onlineUser.friends = user.friends;
+        onlineUser.friendRequestsReceived = user.friendRequestsReceived;
+        for (const [sessionId, activeUser] of Object.entries(onlineUsers)) {
+            if (String(activeUser.id) === String(requester.id)) {
+                activeUser.friends = requester.friends;
+                activeUser.friendRequestsSent = requester.friendRequestsSent;
+                io.to(sessionId).emit('friend list updated', { userId: requester.id, friends: requester.friends });
+            }
+        }
+        io.to(`user:${user.id}`).emit('friend list updated', { userId: user.id, friends: user.friends });
+        io.to(`user:${user.id}`).emit('friend request resolved', {
+            userId: user.id,
+            friendRequestsSent: user.friendRequestsSent,
+            friendRequestsReceived: user.friendRequestsReceived
+        });
+        io.to(`user:${requester.id}`).emit('friend request resolved', {
+            userId: requester.id,
+            friendRequestsSent: requester.friendRequestsSent,
+            friendRequestsReceived: requester.friendRequestsReceived
+        });
+        callback({ success: true, accepted: data.accept, friends: user.friends });
+    });
 
-html[data-theme="dark"] #toggleAuthMode2 {
-    color: #d7e5f5 !important;
-}
+    socket.on('get friends', callback => {
+        const onlineUser = onlineUsers[socket.id];
+        if (!onlineUser) return callback({ success: false, message: "Please sign in again." });
+        const db = readDB();
+        const user = db.users.find(account => account.id === onlineUser.id);
+        if (!user) return callback({ success: false, message: "Your account could not be found." });
+        user.friends = Array.isArray(user.friends) ? user.friends : [];
+        user.friendRequestsSent = Array.isArray(user.friendRequestsSent) ? user.friendRequestsSent : [];
+        user.friendRequestsReceived = Array.isArray(user.friendRequestsReceived) ? user.friendRequestsReceived : [];
+        const findPublicAccounts = ids => ids
+            .map(id => db.users.find(account => String(account.id) === String(id)))
+            .filter(Boolean)
+            .map(publicUser);
+        const friends = user.friends
+            .map(id => db.users.find(account => String(account.id) === String(id)))
+            .filter(Boolean)
+            .map(friend => ({
+                ...publicUser(friend),
+                sessionId: Object.entries(onlineUsers).find(([, active]) => String(active.id) === String(friend.id))?.[0] || ""
+            }));
+        callback({
+            success: true,
+            friends,
+            incomingRequests: findPublicAccounts(user.friendRequestsReceived),
+            outgoingRequests: findPublicAccounts(user.friendRequestsSent)
+        });
+    });
 
-html[data-theme="dark"] .auth-flow-card {
-    border-color: #39465a;
-    background: #182334;
-    color: #e5eaf2;
-}
+    socket.on('delete chat message', (data, callback) => {
+        const requester = onlineUsers[socket.id];
+        if (!requester || !data || typeof data.messageId !== "string") {
+            return callback({ success: false, message: "You must be signed in to delete messages." });
+        }
+        const globalMessage = globalMessages.get(data.messageId);
+        if (globalMessage) {
+            if (requester.id !== globalMessage.userId && requester.role !== "Owner") {
+                return callback({ success: false, message: "You can only delete your own messages." });
+            }
+            if (requester.id !== globalMessage.userId && requester.role !== "Admin") {
+                return callback({ success: false, message: "You can only delete your own messages." });
+            }
+            globalMessages.delete(data.messageId);
+            io.emit('delete chat message', { messageId: data.messageId, mode: "global" });
+            return callback({ success: true });
+        }
+        const db = readDB();
+        for (const [conversationId, messages] of Object.entries(db.privateMessages || {})) {
+            if (!Array.isArray(messages)) continue;
+            const message = messages.find(item => item && item.messageId === data.messageId);
+            if (!message) continue;
+            if (requester.id !== message.userId && requester.role !== "Owner") {
+                return callback({ success: false, message: "You can only delete your own messages." });
+            }
+            if (requester.id !== message.userId && requester.role !== "Admin") {
+                return callback({ success: false, message: "You can only delete your own messages." });
+            }
+            db.privateMessages[conversationId] = messages.filter(item => item && item.messageId !== data.messageId);
+            try {
+                writeDB(db);
+            } catch {
+                return callback({ success: false, message: "The message could not be deleted from storage." });
+            }
+            io.to(`user:${conversationId.split(":")[0]}`)
+                .to(`user:${conversationId.split(":")[1]}`)
+                .emit('delete chat message', { messageId: data.messageId, mode: "private" });
+            return callback({ success: true });
+        }
+        return callback({ success: false, message: "That message is no longer available to delete." });
+    });
 
-html[data-theme="dark"] .auth-flow-card h2,
-html[data-theme="dark"] .auth-flow-card > p,
-html[data-theme="dark"] .auth-flow-form label,
-html[data-theme="dark"] .password-requirement {
-    color: #e5eaf2;
-}
+    // MESSAGING PIPELINES
+    socket.on('global message', (data, callback) => {
+        const sender = onlineUsers[socket.id];
+        if (!sender) {
+            if (typeof callback === "function") callback({ success: false, message: "Please log in again before sending a message." });
+            return;
+        }
+        if (!data || typeof data.text !== "string" || data.text.length > 4000 || !isValidUploadedImage(data.image) || !isValidReply(data.replyTo)) {
+            if (typeof callback === "function") callback({ success: false, message: "The message or attached image is invalid or too large." });
+            return;
+        }
+        if (!data.text.trim() && !data.image) {
+            if (typeof callback === "function") callback({ success: false, message: "Type a message or attach an image." });
+            return;
+        }
+        const messageId = randomUUID();
+        globalMessages.set(messageId, { userId: sender.id });
+        io.emit('broadcast global message', {
+            messageId,
+            senderId: socket.id,
+            userId: sender.id,
+            user: sender.displayName || sender.username,
+            username: sender.username,
+            pronouns: sender.pronouns,
+            role: sender.role || "Member",
+            avatarColor: sender.avatarColor || "#98caff",
+            avatarImage: sender.avatarImage || "",
+            bio: sender.bio || "",
+            bannerColor: sender.bannerColor || "#84c5d0",
+            bannerImage: sender.bannerImage || "",
+            messageColor: sender.messageColor || "#202124",
+            nameColor: sender.nameColor || "#202124",
+            messageFont: sender.messageFont || "system-ui",
+            text: data.text,
+            image: data.image || "",
+            replyTo: normalizeReply(data.replyTo),
+            timestamp: new Date().toISOString()
+        });
+        if (typeof callback === "function") callback({ success: true });
+    });
 
-html[data-theme="dark"] .auth-flow-form input {
-    border-color: #58677d;
-    background: #101927;
-    color: #f3f6fa;
-}
+    socket.on('private message', (data, callback) => {
+        if (!data || typeof data.targetId !== "string" || typeof data.text !== "string" || data.text.length > 4000 || !isValidUploadedImage(data.image) || !isValidReply(data.replyTo)) {
+            return callback({ success: false, message: "The message or attached image is invalid or too large." });
+        }
+        const sender = onlineUsers[socket.id];
+        if (!sender) {
+            return callback({ success: false, message: "Please log in again before sending a message." });
+        }
+        const targetUserId = data.targetId.trim();
+        if (!targetUserId || targetUserId === String(sender.id)) {
+            return callback({ success: false, message: "Choose another account to message." });
+        }
+        const db = readDB();
+        const recipient = db.users.find(user => user.id === targetUserId);
+        if (!recipient) return callback({ success: false, message: "That account ID is invalid." });
+        const conversationId = privateConversationId(sender.id, recipient.id);
+        const payload = {
+            messageId: randomUUID(),
+            conversationId,
+            senderId: sender.id,
+            recipient: {
+                id: recipient.id,
+                username: recipient.username,
+                displayName: recipient.displayName || recipient.username
+            },
+            userId: sender.id,
+            user: sender.displayName || sender.username,
+            username: sender.username,
+            pronouns: sender.pronouns,
+            role: sender.role,
+            avatarColor: sender.avatarColor || "#98caff",
+            avatarImage: sender.avatarImage || "",
+            bio: sender.bio || "",
+            bannerColor: sender.bannerColor || "#84c5d0",
+            bannerImage: sender.bannerImage || "",
+            messageColor: sender.messageColor || "#202124",
+            nameColor: sender.nameColor || "#202124",
+            messageFont: sender.messageFont || "system-ui",
+            text: data.text,
+            image: data.image || "",
+            replyTo: normalizeReply(data.replyTo),
+            timestamp: new Date().toISOString()
+        };
+        if (!data.text.trim() && !data.image) {
+            return callback({ success: false, message: "Type a message or attach an image." });
+        }
+        if (!db.privateMessages || typeof db.privateMessages !== "object" || Array.isArray(db.privateMessages)) {
+            db.privateMessages = {};
+        }
+        if (!Array.isArray(db.privateMessages[conversationId])) db.privateMessages[conversationId] = [];
+        db.privateMessages[conversationId].push(payload);
+        try {
+            writeDB(db);
+        } catch {
+            return callback({ success: false, message: "Your message could not be saved. Please try again." });
+        }
+        io.to(`user:${sender.id}`).to(`user:${recipient.id}`).emit('broadcast private message', payload);
+        callback({ success: true });
+    });
 
-html[data-theme="dark"] .chat-header {
-    background: #172c45;
-}
+    socket.on('disconnect', () => {
+        if (onlineUsers[socket.id]) {
+            delete onlineUsers[socket.id];
+            io.emit('update user lists', onlineUsers);
+        }
+    });
+});
 
-html[data-theme="dark"] .navigation-tabs,
-html[data-theme="dark"] .online-users-panel,
-html[data-theme="dark"] .private-chat-list {
-    border-color: #2b3c52;
-    background: #172334;
-    color: #d1dbea;
-}
-
-html[data-theme="dark"] .tab-btn {
-    color: #c4cfdd;
-}
-
-html[data-theme="dark"] .tab-btn.active {
-    border-color: #75b8ff;
-    background: #22344a;
-    color: #9dccff;
-}
-
-html[data-theme="dark"] .online-user-pill,
-html[data-theme="dark"] .private-chat-tab {
-    border-color: #3a4b61;
-    background: #1c2a3c;
-    color: #d7e5f5;
-}
-
-html[data-theme="dark"] .online-user-pill:not(:disabled):hover,
-html[data-theme="dark"] .online-user-pill:not(:disabled):focus-visible,
-html[data-theme="dark"] .private-chat-tab.active {
-    border-color: #598ec5;
-    background: #2a4260;
-    color: #fff;
-}
-
-html[data-theme="dark"] .online-users-empty {
-    color: #a4b2c4;
-}
-
-html[data-theme="dark"] .chat-messages {
-    background: #0e1623;
-    color: #e5eaf2;
-}
-
-html[data-theme="dark"] .username,
-html[data-theme="dark"] .message-text {
-    color: #e5eaf2;
-}
-
-html[data-theme="dark"] .username-handle,
-html[data-theme="dark"] .user-pronouns {
-    color: #a9bbd1;
-}
-
-html[data-theme="dark"] .message.pinged-msg .message-text {
-    background: #4a3c18;
-    color: #ffe6a1 !important;
-}
-
-html[data-theme="dark"] .reply-context-line,
-html[data-theme="dark"] .reply-context-text {
-    background: #1c2a3c;
-    color: #c4d0df;
-}
-
-html[data-theme="dark"] .reply-context-line:hover .reply-context-text {
-    color: #fff;
-}
-
-html[data-theme="dark"] .reply-banner-indicator {
-    border-color: #30455f;
-    background: #1b2b40;
-    color: #cfe2fa;
-}
-
-html[data-theme="dark"] .chat-input-area,
-html[data-theme="dark"] .pending-image-preview {
-    border-color: #2c3b4e;
-    background: #141f2e;
-    color: #e5eaf2;
-}
-
-html[data-theme="dark"] .chat-input-area input,
-html[data-theme="dark"] .target-id-bar input,
-html[data-theme="dark"] input:not([type="checkbox"]):not([type="color"]),
-html[data-theme="dark"] select,
-html[data-theme="dark"] textarea {
-    border-color: #46566c;
-    background-color: #1b293b;
-    color: #eef4fc;
-}
-
-html[data-theme="dark"] input::placeholder,
-html[data-theme="dark"] textarea::placeholder {
-    color: #a0b0c3;
-}
-
-html[data-theme="dark"] .target-id-bar {
-    border-color: #2c3b4e;
-    background: #182638;
-}
-
-html[data-theme="dark"] .target-id-bar label {
-    color: #d0e0f3 !important;
-}
-
-html[data-theme="dark"] .mention-suggestions {
-    border-color: #3a4b61;
-    background: #182638;
-}
-
-html[data-theme="dark"] .mention-suggestion {
-    color: #d7e5f5;
-}
-
-html[data-theme="dark"] .mention-suggestion:hover,
-html[data-theme="dark"] .mention-suggestion:focus-visible {
-    background: #293d57;
-}
-
-html[data-theme="dark"] .chat-system-event {
-    color: #a7b8cc;
-}
-
-html[data-theme="dark"] .modal-view {
-    background: rgba(0, 0, 0, 0.72);
-}
-
-html[data-theme="dark"] .profile-panel {
-    border-color: #3a485a;
-    background: #172334;
-    color: #e5eaf2;
-}
-
-html[data-theme="dark"] .profile-panel-header h2,
-html[data-theme="dark"] .profile-section-title,
-html[data-theme="dark"] .profile-fields label,
-html[data-theme="dark"] .add-friend-by-id-form label {
-    color: #9dccff;
-}
-
-html[data-theme="dark"] .profile-close-btn,
-html[data-theme="dark"] .profile-session-row,
-html[data-theme="dark"] .profile-message-sample,
-html[data-theme="dark"] .profile-friend {
-    border-color: #3a4b61;
-    background: #1e2d40;
-    color: #e1eaf5;
-}
-
-html[data-theme="dark"] .profile-session-row code,
-html[data-theme="dark"] .profile-intro code {
-    color: #9dccff;
-}
-
-html[data-theme="dark"] .profile-section-title,
-html[data-theme="dark"] .profile-settings-title,
-html[data-theme="dark"] .profile-friends-section,
-html[data-theme="dark"] .friend-requests-section {
-    border-color: #35465b;
-}
-
-html[data-theme="dark"] .profile-preview-card {
-    border-color: #3a485a;
-    background: #1a283a;
-}
-
-html[data-theme="dark"] .profile-preview-name-row span,
-html[data-theme="dark"] #profilePreviewBio,
-html[data-theme="dark"] .profile-file-name {
-    color: #bdc9d8;
-}
-
-html[data-theme="dark"] .profile-friends-status {
-    color: #b6c4d5;
-}
-
-html[data-theme="dark"] .profile-action-btn {
-    border-color: #405b78;
-    background: #263c55;
-    color: #eef5ff;
-}
-
-html[data-theme="dark"] .add-friend-by-id-controls input {
-    border-color: #405b78;
-    background: #1e2d40;
-    color: #eef5ff;
-}
+const PORT = Number(process.env.PORT) || 3009;
+server.listen(PORT, () => console.log(`Server executing successfully on port ${PORT}`));
