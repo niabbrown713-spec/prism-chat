@@ -128,6 +128,24 @@ io.on('connection', (socket) => {
     console.log(`Socket synchronized: ${socket.id}`);
     socket.emit('update user lists', onlineUsers);
 
+    socket.on('typing status', data => {
+        const sender = onlineUsers[socket.id];
+        if (!sender || !data || typeof data.isTyping !== "boolean") return;
+        const typingUpdate = {
+            userId: String(sender.id),
+            username: sender.username,
+            isTyping: data.isTyping
+        };
+        if (data.mode === "global") {
+            socket.broadcast.emit('typing status', { ...typingUpdate, mode: "global" });
+            return;
+        }
+        if (data.mode !== "private" || typeof data.targetId !== "string") return;
+        const targetId = data.targetId.trim();
+        if (!targetId || targetId.length > 80 || targetId === String(sender.id)) return;
+        socket.to(`user:${targetId}`).emit('typing status', { ...typingUpdate, mode: "private" });
+    });
+
     // ACCOUNT REGISTRATION
     socket.on('register user', (data, callback) => {
         const db = readDB();
@@ -781,21 +799,3 @@ io.on('connection', (socket) => {
         if (!Array.isArray(db.privateMessages[conversationId])) db.privateMessages[conversationId] = [];
         db.privateMessages[conversationId].push(payload);
         try {
-            writeDB(db);
-        } catch {
-            return callback({ success: false, message: "Your message could not be saved. Please try again." });
-        }
-        io.to(`user:${sender.id}`).to(`user:${recipient.id}`).emit('broadcast private message', payload);
-        callback({ success: true });
-    });
-
-    socket.on('disconnect', () => {
-        if (onlineUsers[socket.id]) {
-            delete onlineUsers[socket.id];
-            io.emit('update user lists', onlineUsers);
-        }
-    });
-});
-
-const PORT = Number(process.env.PORT) || 3009;
-server.listen(PORT, () => console.log(`Server executing successfully on port ${PORT}`));
