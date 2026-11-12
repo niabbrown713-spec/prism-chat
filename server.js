@@ -217,9 +217,28 @@ io.on('connection', (socket) => {
 
     // ACCOUNT LOGIN
     socket.on('login user', (data, callback) => {
-        const db = readDB();
-        const user = db.users.find(u => u.username.toLowerCase() === data.username.toLowerCase() && u.password === data.password);
-        
+        if (typeof callback !== "function") return;
+        if (!data || typeof data.username !== "string" || !data.username.trim() ||
+            typeof data.password !== "string" || !data.password) {
+            return callback({ success: false, message: "Enter your username and password." });
+        }
+        let db;
+        try {
+            db = readDB();
+        } catch (error) {
+            console.error("Could not read account data during login:", error);
+            return callback({ success: false, message: "Your account data could not be loaded. Please try again later." });
+        }
+        if (!db || !Array.isArray(db.users)) {
+            console.error("Account data is invalid: expected a users array.");
+            return callback({ success: false, message: "Account data is unavailable. Please contact the chat owner." });
+        }
+        const user = db.users.find(account =>
+            account && typeof account.username === "string" &&
+            account.username.toLowerCase() === data.username.trim().toLowerCase() &&
+            account.password === data.password
+        );
+
         if (!user) {
             return callback({ success: false, message: "Invalid username or password!" });
         }
@@ -259,7 +278,14 @@ io.on('connection', (socket) => {
             user.nameColor = "#202124";
             accountUpdated = true;
         }
-        if (accountUpdated) writeDB(db);
+        if (accountUpdated) {
+            try {
+                writeDB(db);
+            } catch (error) {
+                console.error("Could not save account updates during login:", error);
+                return callback({ success: false, message: "Your account could not be updated in storage. Please try again later." });
+            }
+        }
 
         onlineUsers[socket.id] = {
             username: user.username,
