@@ -679,6 +679,7 @@ authDesc.textContent = isLoginMode ? "Log into your account to start chatting!" 
 btnSubmitLogin.textContent = isLoginMode ? "Log In" : "Create Account";
 toggleAuthMode.textContent = isLoginMode ? "Register" : "Log In";
 toggleAuthMode2.textContent = isLoginMode ? "Need an account?" : "Already have an account? ";
+btnSubmitLogin.style.marginTop = isLoginMode ? '0' : '34px';
 btnForgetPassword.classList.toggle('hidden', !isLoginMode);
 secretCodeSetup.classList.toggle('hidden', isLoginMode);
 secretCodeInput.disabled = isLoginMode;
