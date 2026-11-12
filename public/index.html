@@ -6,10 +6,6 @@
     <title>Prism Chat</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="style.css">
-    <link rel="apple-touch-icon" sizes="180x180" href="prism chat favion/apple-touch-icon.png">
-    <link rel="icon" type="image/png" sizes="32x32" href="prism chat favion/favicon-32x32.png">
-    <link rel="icon" type="image/png" sizes="16x16" href="prism chat favion/favicon-16x16.png">
-    <link rel="manifest" href="prism chat favion/site.webmanifest">
     
 </head>
 <body>
@@ -256,7 +252,7 @@
                 <h3 class="profile-section-title">Theme</h3>
                 <label class="theme-toggle-row" for="darkThemeToggle">
                     <span>Dark theme</span>
-                    <input type="checkbox" id="darkThemeToggle">
+                    <input type="checkbox" id="darkThemeToggle" checked>
                 </label>
                 <p class="theme-settings-hint">This preference is saved on this device.</p>
             </section>
@@ -337,6 +333,25 @@
                 <h2 id="friendsTitle">Friends</h2>
                 <button type="button" id="btnCloseFriends" class="profile-close-btn" aria-label="Close friends">×</button>
             </header>
+            <form id="addFriendByIdForm" class="add-friend-by-id-form">
+                <label for="addFriendByIdInput">Add friend by account ID</label>
+                <div class="add-friend-by-id-controls">
+                    <input type="text" id="addFriendByIdInput" maxlength="80" autocomplete="off" placeholder="Enter their account ID">
+                    <button type="submit" class="profile-action-btn">Send request</button>
+                </div>
+                <p id="addFriendByIdStatus" class="profile-friends-status" role="status" aria-live="polite"></p>
+            </form>
+            <section class="friend-requests-section">
+                <h3 class="profile-section-title">Requests to you</h3>
+                <p id="incomingFriendRequestsStatus" class="profile-friends-status" role="status" aria-live="polite"></p>
+                <div id="incomingFriendRequestsList" class="profile-friends-list"></div>
+            </section>
+            <section class="friend-requests-section">
+                <h3 class="profile-section-title">Requests sent</h3>
+                <p id="outgoingFriendRequestsStatus" class="profile-friends-status" role="status" aria-live="polite"></p>
+                <div id="outgoingFriendRequestsList" class="profile-friends-list"></div>
+            </section>
+            <h3 class="profile-section-title">Your friends</h3>
             <p id="friendsListStatus" class="profile-friends-status" role="status" aria-live="polite">Loading friends...</p>
             <div id="friendsList" class="profile-friends-list"></div>
         </section>
@@ -462,6 +477,13 @@ const friendsModal = document.getElementById('friendsModal');
 const btnCloseFriends = document.getElementById('btnCloseFriends');
 const friendsListStatus = document.getElementById('friendsListStatus');
 const friendsList = document.getElementById('friendsList');
+const addFriendByIdForm = document.getElementById('addFriendByIdForm');
+const addFriendByIdInput = document.getElementById('addFriendByIdInput');
+const addFriendByIdStatus = document.getElementById('addFriendByIdStatus');
+const incomingFriendRequestsStatus = document.getElementById('incomingFriendRequestsStatus');
+const incomingFriendRequestsList = document.getElementById('incomingFriendRequestsList');
+const outgoingFriendRequestsStatus = document.getElementById('outgoingFriendRequestsStatus');
+const outgoingFriendRequestsList = document.getElementById('outgoingFriendRequestsList');
 const userProfileModal = document.getElementById('userProfileModal');
 const userProfileBanner = document.getElementById('userProfileBanner');
 const userProfileAvatar = document.getElementById('userProfileAvatar');
@@ -652,8 +674,26 @@ socket.on('friend list updated', data => {
 if (!currentUser || String(currentUser.id) !== String(data.userId)) return;
 currentUser.friends = data.friends;
 if (!userProfileModal.classList.contains('hidden') && viewedUserProfile) {
-btnToggleFriend.textContent = currentUser.friends.includes(String(viewedUserProfile.id)) ? 'Remove friend' : 'Add friend';
+updateFriendProfileButton();
 }
+if (!profileModal.classList.contains('hidden') || !friendsModal.classList.contains('hidden')) loadFriends();
+});
+socket.on('friend request received', data => {
+if (!currentUser || !data || !data.from) return;
+const requesterId = String(data.from.id);
+currentUser.friendRequestsReceived = currentUser.friendRequestsReceived || [];
+if (!currentUser.friendRequestsReceived.some(id => String(id) === requesterId)) {
+currentUser.friendRequestsReceived.push(requesterId);
+}
+if (!friendsModal.classList.contains('hidden')) loadFriends();
+if (!userProfileModal.classList.contains('hidden') && viewedUserProfile &&
+    String(viewedUserProfile.id) === String(data.from.id)) updateFriendProfileButton();
+});
+socket.on('friend request resolved', data => {
+if (!currentUser || !data || String(currentUser.id) !== String(data.userId)) return;
+currentUser.friendRequestsSent = data.friendRequestsSent || [];
+currentUser.friendRequestsReceived = data.friendRequestsReceived || [];
+if (!userProfileModal.classList.contains('hidden') && viewedUserProfile) updateFriendProfileButton();
 if (!profileModal.classList.contains('hidden') || !friendsModal.classList.contains('hidden')) loadFriends();
 });
 togglePasswordVisibility.addEventListener('click', () => {
@@ -1163,18 +1203,58 @@ userProfileModal.classList.add('hidden');
 });
 btnToggleFriend.addEventListener('click', () => {
 if (!viewedUserProfile || !viewedUserProfile.id) return;
-const add = !((currentUser.friends || []).includes(String(viewedUserProfile.id)));
+const friendId = String(viewedUserProfile.id);
+const incoming = (currentUser.friendRequestsReceived || []).some(id => String(id) === friendId);
+const add = !(currentUser.friends || []).some(id => String(id) === friendId);
+if (incoming) {
+respondToFriendRequest(friendId, true, userProfileStatus);
+return;
+}
+if ((currentUser.friendRequestsSent || []).some(id => String(id) === friendId)) {
+userProfileStatus.textContent = 'Friend request sent. Waiting for them to respond.';
+return;
+}
 socket.timeout(8000).emit('update friend', { userId: String(viewedUserProfile.id), add }, (error, response) => {
 if (error || !response || !response.success) {
 userProfileStatus.textContent = response && response.message ? response.message : 'Could not update your friend list. Try again.';
 return;
 }
 currentUser.friends = response.friends;
-btnToggleFriend.textContent = response.isFriend ? 'Remove friend' : 'Add friend';
-userProfileStatus.textContent = response.isFriend ? 'Added to your friends.' : 'Removed from your friends.';
+currentUser.friendRequestsSent = response.friendRequestsSent || currentUser.friendRequestsSent || [];
+currentUser.friendRequestsReceived = response.friendRequestsReceived || currentUser.friendRequestsReceived || [];
+updateFriendProfileButton();
+userProfileStatus.textContent = response.status === 'sent'
+? `Friend request sent to ${response.friend.displayName || response.friend.username}.`
+: response.status === 'pending'
+? 'Friend request already sent. Waiting for them to respond.'
+: response.status === 'friends'
+? 'You are already friends.'
+: 'Friend removed.';
 loadFriends();
 });
 });
+function updateFriendProfileButton() {
+if (!viewedUserProfile || !currentUser) return;
+const friendId = String(viewedUserProfile.id);
+const isFriend = (currentUser.friends || []).some(id => String(id) === friendId);
+const hasIncoming = (currentUser.friendRequestsReceived || []).some(id => String(id) === friendId);
+const hasOutgoing = (currentUser.friendRequestsSent || []).some(id => String(id) === friendId);
+btnToggleFriend.textContent = isFriend ? 'Remove friend' : hasIncoming ? 'Accept friend request' : hasOutgoing ? 'Request sent' : 'Add friend';
+btnToggleFriend.disabled = String(currentUser.id) === friendId || hasOutgoing;
+}
+function respondToFriendRequest(userId, accept, statusElement) {
+socket.timeout(8000).emit('respond friend request', { userId, accept }, (error, response) => {
+if (error || !response || !response.success) {
+statusElement.textContent = response && response.message ? response.message : 'Could not respond to that friend request.';
+return;
+}
+currentUser.friends = response.friends || currentUser.friends;
+currentUser.friendRequestsReceived = (currentUser.friendRequestsReceived || []).filter(id => String(id) !== String(userId));
+if (viewedUserProfile && String(viewedUserProfile.id) === String(userId)) updateFriendProfileButton();
+statusElement.textContent = accept ? 'Friend request accepted.' : 'Friend request declined.';
+loadFriends();
+});
+}
 function showUserProfile(user) {
 viewedUserProfile = user;
 const online = onlineUsersById.get(String(user.id));
@@ -1200,8 +1280,7 @@ if (avatarImage) {
 userProfileImage.src = avatarImage;
 userProfileImage.classList.remove('hidden');
 }
-btnToggleFriend.textContent = (currentUser.friends || []).includes(String(user.id)) ? 'Remove friend' : 'Add friend';
-btnToggleFriend.disabled = String(currentUser.id) === String(user.id);
+updateFriendProfileButton();
 btnCopyUserSession.disabled = !online;
 btnMessageUser.disabled = String(user.id) === String(currentUser.id);
 userProfileStatus.textContent = online ? 'Online now.' : 'Offline. You can still message this account.';
@@ -1246,6 +1325,8 @@ profileFriendsStatus.textContent = 'Loading friends...';
 profileFriendsList.replaceChildren();
 friendsListStatus.textContent = 'Loading friends...';
 friendsList.replaceChildren();
+incomingFriendRequestsList.replaceChildren();
+outgoingFriendRequestsList.replaceChildren();
 socket.timeout(8000).emit('get friends', (error, response) => {
 if (error || !response || !response.success) {
 const message = response && response.message ? response.message : 'Could not load friends.';
@@ -1254,7 +1335,43 @@ friendsListStatus.textContent = message;
 return;
 }
 currentUser.friends = response.friends.map(friend => String(friend.id));
-const emptyMessage = 'No friends yet. Open someone’s profile to add them.';
+currentUser.friendRequestsReceived = response.incomingRequests.map(request => String(request.id));
+currentUser.friendRequestsSent = response.outgoingRequests.map(request => String(request.id));
+if (!userProfileModal.classList.contains('hidden') && viewedUserProfile) updateFriendProfileButton();
+incomingFriendRequestsStatus.textContent = response.incomingRequests.length ? '' : 'No new friend requests.';
+outgoingFriendRequestsStatus.textContent = response.outgoingRequests.length ? '' : 'No pending requests.';
+response.incomingRequests.forEach(request => {
+const requestRow = document.createElement('div');
+requestRow.classList.add('friend-request-row');
+const profileButton = document.createElement('button');
+profileButton.type = 'button';
+profileButton.classList.add('profile-friend');
+profileButton.textContent = `${request.displayName || request.username} · ID ${request.id}`;
+profileButton.addEventListener('click', () => {
+friendsModal.classList.add('hidden');
+showUserProfile(request);
+});
+const acceptButton = document.createElement('button');
+acceptButton.type = 'button';
+acceptButton.classList.add('profile-action-btn');
+acceptButton.textContent = 'Accept';
+acceptButton.addEventListener('click', () => respondToFriendRequest(String(request.id), true, incomingFriendRequestsStatus));
+const declineButton = document.createElement('button');
+declineButton.type = 'button';
+declineButton.classList.add('profile-action-btn');
+declineButton.textContent = 'Decline';
+declineButton.addEventListener('click', () => respondToFriendRequest(String(request.id), false, incomingFriendRequestsStatus));
+requestRow.append(profileButton, acceptButton, declineButton);
+incomingFriendRequestsList.appendChild(requestRow);
+});
+response.outgoingRequests.forEach(request => {
+const requestButton = document.createElement('button');
+requestButton.type = 'button';
+requestButton.classList.add('profile-friend');
+requestButton.textContent = `${request.displayName || request.username} · ID ${request.id} · Waiting`;
+outgoingFriendRequestsList.appendChild(requestButton);
+});
+const emptyMessage = 'No friends yet. Add someone by ID or send a request from their profile.';
 profileFriendsStatus.textContent = response.friends.length ? '' : emptyMessage;
 friendsListStatus.textContent = response.friends.length ? '' : emptyMessage;
 response.friends.forEach(friend => {
@@ -1288,6 +1405,31 @@ loadFriends();
 btnCloseFriends.addEventListener('click', () => friendsModal.classList.add('hidden'));
 friendsModal.addEventListener('click', event => {
 if (event.target === friendsModal) friendsModal.classList.add('hidden');
+});
+addFriendByIdForm.addEventListener('submit', event => {
+event.preventDefault();
+const userId = addFriendByIdInput.value.trim();
+if (!userId) {
+addFriendByIdStatus.textContent = 'Enter an account ID.';
+return;
+}
+addFriendByIdStatus.textContent = 'Adding friend...';
+socket.timeout(8000).emit('update friend', { userId, add: true }, (error, response) => {
+if (error || !response || !response.success) {
+addFriendByIdStatus.textContent = response && response.message ? response.message : 'Could not add that friend. Try again.';
+return;
+}
+currentUser.friends = response.friends;
+currentUser.friendRequestsSent = response.friendRequestsSent || currentUser.friendRequestsSent || [];
+currentUser.friendRequestsReceived = response.friendRequestsReceived || currentUser.friendRequestsReceived || [];
+addFriendByIdInput.value = '';
+addFriendByIdStatus.textContent = response.status === 'sent'
+? `Friend request sent to ${response.friend.displayName || response.friend.username}.`
+: response.status === 'pending'
+? 'You already sent that person a friend request.'
+: 'You are already friends with that person.';
+loadFriends();
+});
 });
 tabGlobal.addEventListener('click', () => {
 currentMode = "global"; tabGlobal.classList.add('active'); tabPrivate.classList.remove('active'); dmTargetBar.classList.add('hidden');
