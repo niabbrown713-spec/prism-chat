@@ -59,9 +59,11 @@
             padding: 8px;
             border: 0;
             background: transparent !important;
-            color: #1762c4 !important;
+            color: #85abd0 !important;
             font-size: 0.9rem !important;
             cursor: pointer;
+            text-align: end;
+            padding: 6px 0 !important;
         }
 
         .auth-flow-card {
@@ -227,7 +229,7 @@
             border-radius: 8px;
             font-size: 1rem;
             cursor: pointer;
-            margin-top: 30px;
+            /* margin-top: 30px; */
             align-self: center;
         }
 
