@@ -103,6 +103,7 @@ function publicUser(user) {
         id: user.id,
         username: user.username,
         displayName: user.displayName || "Prism",
+        nameColor: user.nameColor || "#202124",
         avatarColor: user.avatarColor || "#98caff",
         avatarImage: user.avatarImage || user.avatarUrl || "",
         pronouns: user.pronouns || "",
@@ -156,6 +157,7 @@ io.on('connection', (socket) => {
             friendRequestsSent: [],
             friendRequestsReceived: [],
             messageColor: "#202124",
+            nameColor: "#202124",
             messageFont: "system-ui",
             secretCodeSalt: secretCode.salt,
             secretCodeHash: secretCode.hash
@@ -171,6 +173,7 @@ io.on('connection', (socket) => {
             avatarColor: newUser.avatarColor,
             avatarImage: newUser.avatarImage,
             displayName: newUser.displayName,
+            nameColor: newUser.nameColor,
             pronouns: newUser.pronouns,
             bio: newUser.bio,
             bannerColor: newUser.bannerColor,
@@ -211,6 +214,7 @@ io.on('connection', (socket) => {
             ["friendRequestsSent", []],
             ["friendRequestsReceived", []],
             ["messageColor", "#202124"],
+            ["nameColor", "#202124"],
             ["messageFont", "system-ui"]
         ]) {
             if (!user[field]) {
@@ -221,6 +225,10 @@ io.on('connection', (socket) => {
         if (!/^#[0-9a-f]{6}$/i.test(user.messageColor) || !MESSAGE_FONTS.has(user.messageFont)) {
             user.messageColor = "#202124";
             user.messageFont = "system-ui";
+            accountUpdated = true;
+        }
+        if (typeof user.nameColor !== "string" || !/^#[0-9a-f]{6}$/i.test(user.nameColor)) {
+            user.nameColor = "#202124";
             accountUpdated = true;
         }
         if (accountUpdated) writeDB(db);
@@ -237,6 +245,7 @@ io.on('connection', (socket) => {
             bannerColor: user.bannerColor || "#84c5d0",
             bannerImage: user.bannerImage || "",
             messageColor: user.messageColor || "#202124",
+            nameColor: user.nameColor || "#202124",
             messageFont: user.messageFont || "system-ui",
             friends: Array.isArray(user.friends) ? user.friends : [],
             friendRequestsSent: Array.isArray(user.friendRequestsSent) ? user.friendRequestsSent : [],
@@ -397,6 +406,9 @@ io.on('connection', (socket) => {
         if (data.messageColor !== undefined && (typeof data.messageColor !== "string" || !/^#[0-9a-f]{6}$/i.test(data.messageColor))) {
             return callback({ success: false, message: "Choose a valid message color." });
         }
+        if (data.nameColor !== undefined && (typeof data.nameColor !== "string" || !/^#[0-9a-f]{6}$/i.test(data.nameColor))) {
+            return callback({ success: false, message: "Choose a valid name color." });
+        }
         if (data.avatarColor !== undefined && (typeof data.avatarColor !== "string" || !/^#[0-9a-f]{6}$/i.test(data.avatarColor))) {
             return callback({ success: false, message: "Choose a valid profile picture color." });
         }
@@ -418,6 +430,7 @@ io.on('connection', (socket) => {
         user.avatarUrl = "";
         user.bannerImage = data.bannerImage === undefined ? (user.bannerImage || "") : data.bannerImage;
         user.messageColor = data.messageColor === undefined ? (user.messageColor || "#202124") : data.messageColor;
+        user.nameColor = data.nameColor === undefined ? (user.nameColor || "#202124") : data.nameColor;
         user.messageFont = data.messageFont === undefined ? (user.messageFont || "system-ui") : data.messageFont;
         try {
             writeDB(db);
@@ -435,6 +448,7 @@ io.on('connection', (socket) => {
             activeUser.bannerColor = user.bannerColor;
             activeUser.bannerImage = user.bannerImage;
             activeUser.messageColor = user.messageColor;
+            activeUser.nameColor = user.nameColor;
             activeUser.messageFont = user.messageFont;
         }
         callback({ success: true, user: clientAccount(user) });
@@ -695,6 +709,7 @@ io.on('connection', (socket) => {
             bannerColor: sender.bannerColor || "#84c5d0",
             bannerImage: sender.bannerImage || "",
             messageColor: sender.messageColor || "#202124",
+            nameColor: sender.nameColor || "#202124",
             messageFont: sender.messageFont || "system-ui",
             text: data.text,
             image: data.image || "",
@@ -740,6 +755,7 @@ io.on('connection', (socket) => {
             bannerColor: sender.bannerColor || "#84c5d0",
             bannerImage: sender.bannerImage || "",
             messageColor: sender.messageColor || "#202124",
+            nameColor: sender.nameColor || "#202124",
             messageFont: sender.messageFont || "system-ui",
             text: data.text,
             image: data.image || "",
