@@ -263,7 +263,6 @@
             border-bottom: 2px solid #98caff;
             display: flex;
             justify-content: center;
-            gap: 2px;
         }
 
         .tab-btn {
@@ -276,9 +275,6 @@
             color: #555;
             font-size: 0.9rem;
             text-align: center;
-            display: flex;
-            justify-content: center;
-            gap: 2px;
         }
 
         .dm-unread-indicator {
@@ -864,6 +860,14 @@
             cursor: pointer;
         }
 
+        .typing-indicator {
+            min-height: 1.2em;
+            padding: 3px 18px 0;
+            color: #586574;
+            font-size: 0.8rem;
+            font-style: italic;
+        }
+
         .plus-img-btn {
             background: #9cc8ff38;
             color: #3f9cff;
@@ -1072,7 +1076,6 @@
             display: grid;
             gap: 6px;
             margin-top: 6px;
-            margin-bottom: 26px;
         }
 
         .profile-friend {
@@ -1179,7 +1182,7 @@
         .profile-role-controls label {
             display: block;
             margin-bottom: 6px;
-            color: #4d6b8f;
+            color: #343e4a;
             font-size: 0.85rem;
             font-weight: 600;
         }
@@ -1442,7 +1445,10 @@ html[data-theme="dark"] body {
 
 html[data-theme="dark"] .chat-container {
     background: #111827;
-    color: #e5eaf2;
+}
+
+html[data-theme="dark"] .typing-indicator {
+    color: #b6c4d5;
 }
 
 html[data-theme="dark"] #authTitle,
@@ -1654,13 +1660,4 @@ html[data-theme="dark"] .profile-friends-status {
 }
 
 html[data-theme="dark"] .profile-action-btn {
-    border-color: #405b78;
-    background: #263c55;
-    color: #eef5ff;
-}
-
-html[data-theme="dark"] .add-friend-by-id-controls input {
-    border-color: #405b78;
-    background: #1e2d40;
-    color: #eef5ff;
-}
+ 
