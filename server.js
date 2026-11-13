@@ -843,3 +843,160 @@ io.on('connection', (socket) => {
             globalMessage.text = editedText;
             globalMessage.editedAt = new Date().toISOString();
             io.emit('edit chat message', {
+                messageId: data.messageId,
+                text: globalMessage.text,
+                editedAt: globalMessage.editedAt,
+                mode: "global"
+            });
+            return reply({ success: true });
+        }
+
+        let db;
+        try {
+            db = readDB();
+        } catch (error) {
+            console.error("Could not read messages for editing:", error);
+            return reply({ success: false, message: "Messages could not be loaded. Try again later." });
+        }
+        for (const [conversationId, messages] of Object.entries(db.privateMessages || {})) {
+            if (!Array.isArray(messages)) continue;
+            const message = messages.find(item => item && item.messageId === data.messageId);
+            if (!message) continue;
+            if (String(requester.id) !== String(message.userId) && requester.role !== "Owner") {
+                return reply({ success: false, message: "You can only edit your own messages." });
+            }
+            message.text = editedText;
+            message.editedAt = new Date().toISOString();
+            try {
+                writeDB(db);
+            } catch (error) {
+                console.error("Could not save edited message:", error);
+                return reply({ success: false, message: "The edit could not be saved." });
+            }
+            io.to(`user:${conversationId.split(":")[0]}`)
+                .to(`user:${conversationId.split(":")[1]}`)
+                .emit('edit chat message', {
+                    messageId: data.messageId,
+                    text: message.text,
+                    editedAt: message.editedAt,
+                    mode: "private"
+                });
+            return reply({ success: true });
+        }
+        return reply({ success: false, message: "That message is no longer available to edit." });
+    });
+
+    // MESSAGING PIPELINES
+    socket.on('global message', (data, callback) => {
+        const sender = onlineUsers[socket.id];
+        if (!sender) {
+            if (typeof callback === "function") callback({ success: false, message: "Please log in again before sending a message." });
+            return;
+        }
+        if (!data || typeof data.text !== "string" || data.text.length > 4000 || !isValidUploadedImage(data.image) || !isValidReply(data.replyTo)) {
+            if (typeof callback === "function") callback({ success: false, message: "The message or attached image is invalid or too large." });
+            return;
+        }
+        if (!data.text.trim() && !data.image) {
+            if (typeof callback === "function") callback({ success: false, message: "Type a message or attach an image." });
+            return;
+        }
+        const messageId = randomUUID();
+        const message = {
+            messageId,
+            senderId: socket.id,
+            userId: sender.id,
+            user: sender.displayName || sender.username,
+            username: sender.username,
+            createdAt: sender.createdAt || "",
+            pronouns: sender.pronouns,
+            role: sender.role || "Member",
+            avatarColor: sender.avatarColor || "#98caff",
+            avatarImage: sender.avatarImage || "",
+            bio: sender.bio || "",
+            bannerColor: sender.bannerColor || "#84c5d0",
+            bannerImage: sender.bannerImage || "",
+            messageColor: sender.messageColor || "#202124",
+            nameColor: sender.nameColor || "#202124",
+            messageFont: sender.messageFont || "system-ui",
+            text: data.text,
+            image: data.image || "",
+            replyTo: normalizeReply(data.replyTo),
+            timestamp: new Date().toISOString()
+        };
+        globalMessages.set(messageId, message);
+        io.emit('broadcast global message', message);
+        if (typeof callback === "function") callback({ success: true });
+    });
+
+    socket.on('private message', (data, callback) => {
+        if (!data || typeof data.targetId !== "string" || typeof data.text !== "string" || data.text.length > 4000 || !isValidUploadedImage(data.image) || !isValidReply(data.replyTo)) {
+            return callback({ success: false, message: "The message or attached image is invalid or too large." });
+        }
+        const sender = onlineUsers[socket.id];
+        if (!sender) {
+            return callback({ success: false, message: "Please log in again before sending a message." });
+        }
+        const targetUserId = data.targetId.trim();
+        if (!targetUserId || targetUserId === String(sender.id)) {
+            return callback({ success: false, message: "Choose another account to message." });
+        }
+        const db = readDB();
+        const recipient = db.users.find(user => user.id === targetUserId);
+        if (!recipient) return callback({ success: false, message: "That account ID is invalid." });
+        const conversationId = privateConversationId(sender.id, recipient.id);
+        const payload = {
+            messageId: randomUUID(),
+            conversationId,
+            senderId: sender.id,
+            recipient: {
+                id: recipient.id,
+                username: recipient.username,
+                displayName: recipient.displayName || recipient.username
+            },
+            userId: sender.id,
+            user: sender.displayName || sender.username,
+            username: sender.username,
+            createdAt: sender.createdAt || "",
+            pronouns: sender.pronouns,
+            role: sender.role,
+            avatarColor: sender.avatarColor || "#98caff",
+            avatarImage: sender.avatarImage || "",
+            bio: sender.bio || "",
+            bannerColor: sender.bannerColor || "#84c5d0",
+            bannerImage: sender.bannerImage || "",
+            messageColor: sender.messageColor || "#202124",
+            nameColor: sender.nameColor || "#202124",
+            messageFont: sender.messageFont || "system-ui",
+            text: data.text,
+            image: data.image || "",
+            replyTo: normalizeReply(data.replyTo),
+            timestamp: new Date().toISOString()
+        };
+        if (!data.text.trim() && !data.image) {
+            return callback({ success: false, message: "Type a message or attach an image." });
+        }
+        if (!db.privateMessages || typeof db.privateMessages !== "object" || Array.isArray(db.privateMessages)) {
+            db.privateMessages = {};
+        }
+        if (!Array.isArray(db.privateMessages[conversationId])) db.privateMessages[conversationId] = [];
+        db.privateMessages[conversationId].push(payload);
+        try {
+            writeDB(db);
+        } catch {
+            return callback({ success: false, message: "Your message could not be saved. Please try again." });
+        }
+        io.to(`user:${sender.id}`).to(`user:${recipient.id}`).emit('broadcast private message', payload);
+        callback({ success: true });
+    });
+
+    socket.on('disconnect', () => {
+        if (onlineUsers[socket.id]) {
+            delete onlineUsers[socket.id];
+            io.emit('update user lists', onlineUsers);
+        }
+    });
+});
+
+const PORT = Number(process.env.PORT) || 3009;
+server.listen(PORT, () => console.log(`Server executing successfully on port ${PORT}`));
