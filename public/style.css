@@ -987,6 +987,28 @@
             margin-right: 5px;
         }
 
+        .report-btn {
+            position: absolute;
+            top: 0;
+            right: 100px;
+            margin: 0;
+        }
+
+        .profile-panel.report-panel {
+            display: flex;
+            flex-direction: column;
+            width: min(100%, 760px);
+            height: min(90vh, 900px);
+            overflow: hidden;
+        }
+
+        .report-form-frame {
+            flex: 1;
+            width: 100%;
+            min-height: 0;
+            border: 0;
+        }
+
         .settings-panel {
             width: min(100%, 380px);
         }
@@ -1454,7 +1476,8 @@
         @media (max-width: 480px) {
             #btnOpenProfile span,
             #btnOpenSettings span,
-            .zoom-btn span {
+            .zoom-btn span,
+            .report-btn span {
                 display: none;
             }
 
@@ -1476,6 +1499,13 @@
 
             .zoom-btn .fa {
                 margin: 0;
+            }
+
+            .report-btn {
+                right: 50px;
+                width: 34px;
+                justify-content: center;
+                padding: 4px;
             }
 
             #btnOpenSettings {
