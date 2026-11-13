@@ -75,6 +75,19 @@ const globalMessages = new Map();
 const recoveryCooldowns = new Map();
 const passwordResetTokens = new Map();
 const MESSAGE_FONTS = new Set(["system-ui", "Arial", "Georgia", "monospace", "cursive"]);
+const MODERATION_ROLE_LEVEL = { Member: 1, Moderator: 2, Admin: 3, Owner: 4 };
+const MAX_MODERATION_DURATION_MS = 365 * 24 * 60 * 60 * 1000;
+
+function parseModerationDuration(value) {
+    if (typeof value !== "string") return null;
+    const match = /^(\d{2,}):([0-5]\d):([0-5]\d)$/.exec(value);
+    if (!match) return null;
+    const hours = Number(match[1]);
+    const durationMs = ((hours * 60 + Number(match[2])) * 60 + Number(match[3])) * 1000;
+    return Number.isSafeInteger(durationMs) && durationMs > 0 && durationMs <= MAX_MODERATION_DURATION_MS
+        ? durationMs
+        : null;
+}
 
 function hashSecretCode(secretCode, salt = randomBytes(16).toString("hex")) {
     return {
@@ -112,6 +125,7 @@ function publicUser(user) {
     return {
         id: user.id,
         username: user.username,
+        createdAt: typeof user.createdAt === "string" ? user.createdAt : "",
         displayName: user.displayName || "Prism",
         nameColor: user.nameColor || "#202124",
         avatarColor: user.avatarColor || "#98caff",
@@ -146,6 +160,75 @@ io.on('connection', (socket) => {
         socket.to(`user:${targetId}`).emit('typing status', { ...typingUpdate, mode: "private" });
     });
 
+    socket.on('moderation command', (data, callback) => {
+        const reply = typeof callback === "function" ? callback : () => {};
+        const requester = onlineUsers[socket.id];
+        if (!requester || !data || typeof data.command !== "string" || data.command.length > 200) {
+            return reply({ success: false, message: "Invalid moderation command." });
+        }
+        if ((MODERATION_ROLE_LEVEL[requester.role] || 0) < MODERATION_ROLE_LEVEL.Moderator) {
+            return reply({ success: false, message: "Only moderators and above can use moderation commands." });
+        }
+
+        const command = data.command.trim();
+        const match = /^\/kick\s+(\S+)\s+(\d{2,}:\d{2}:\d{2})$/i.exec(command) ||
+            /^\/tem\s+ban\s+(\S+)\s+(\d{2,}:\d{2}:\d{2})$/i.exec(command);
+        if (!match) {
+            return reply({ success: false, message: "Use /kick username HH:MM:SS or /tem ban username HH:MM:SS." });
+        }
+        const durationMs = parseModerationDuration(match[2]);
+        if (!durationMs) {
+            return reply({ success: false, message: "Enter a duration greater than zero, up to 365 days, in HH:MM:SS format." });
+        }
+        const isBan = /^\/tem\s+ban\b/i.test(command);
+        let db;
+        try {
+            db = readDB();
+        } catch (error) {
+            console.error("Could not read account data for moderation command:", error);
+            return reply({ success: false, message: "Account data could not be loaded. Try again later." });
+        }
+        if (!db || !Array.isArray(db.users)) {
+            return reply({ success: false, message: "Account data is unavailable." });
+        }
+        const target = db.users.find(account =>
+            account && typeof account.username === "string" &&
+            account.username.toLowerCase() === match[1].toLowerCase()
+        );
+        if (!target) return reply({ success: false, message: `No account named "${match[1]}" was found.` });
+        if (String(target.id) === String(requester.id)) {
+            return reply({ success: false, message: "You cannot moderate your own account." });
+        }
+        if ((MODERATION_ROLE_LEVEL[target.role] || 0) >= (MODERATION_ROLE_LEVEL[requester.role] || 0)) {
+            return reply({ success: false, message: "You can only moderate users with a lower role than yours." });
+        }
+
+        const moderationUntil = Date.now() + durationMs;
+        target.moderationUntil = moderationUntil;
+        target.moderationType = isBan ? "ban" : "kick";
+        try {
+            writeDB(db);
+        } catch (error) {
+            console.error("Could not save moderation command:", error);
+            return reply({ success: false, message: "The moderation action could not be saved." });
+        }
+
+        const durationLabel = match[2];
+        const actionLabel = isBan ? "temporarily banned" : "kicked";
+        const message = `Your account has been ${actionLabel} for ${durationLabel}. You can sign in again after ${new Date(moderationUntil).toLocaleString()}.`;
+        for (const [sessionId, activeUser] of Object.entries(onlineUsers)) {
+            if (String(activeUser.id) !== String(target.id)) continue;
+            const targetSocket = io.sockets.sockets.get(sessionId);
+            if (!targetSocket) continue;
+            targetSocket.emit('moderation session ended', { message });
+            setTimeout(() => targetSocket.disconnect(true), 100);
+        }
+        io.emit('moderation notice', {
+            text: `@${target.username} was ${actionLabel} by @${requester.username} for ${durationLabel}.`
+        });
+        reply({ success: true, message: `@${target.username} was ${actionLabel} for ${durationLabel}.` });
+    });
+
     // ACCOUNT REGISTRATION
     socket.on('register user', (data, callback) => {
         const db = readDB();
@@ -173,6 +256,7 @@ io.on('connection', (socket) => {
             username: data.username,
             password: data.password,
             id: assignedId,
+            createdAt: new Date().toISOString(),
             role: assignedRole,
             avatarColor: "#98caff",
             avatarImage: "",
@@ -197,6 +281,7 @@ io.on('connection', (socket) => {
         onlineUsers[socket.id] = {
             username: newUser.username,
             id: newUser.id,
+            createdAt: newUser.createdAt,
             role: newUser.role,
             avatarColor: newUser.avatarColor,
             avatarImage: newUser.avatarImage,
@@ -242,9 +327,22 @@ io.on('connection', (socket) => {
         if (!user) {
             return callback({ success: false, message: "Invalid username or password!" });
         }
+        const now = Date.now();
+        if (typeof user.moderationUntil === "number" && user.moderationUntil > now) {
+            const remainingSeconds = Math.ceil((user.moderationUntil - now) / 1000);
+            return callback({
+                success: false,
+                message: `Your account is temporarily ${user.moderationType === "ban" ? "banned" : "kicked"} until ${new Date(user.moderationUntil).toLocaleString()}. Try again in ${Math.ceil(remainingSeconds / 60)} minute(s).`
+            });
+        }
 
         // CRITICAL ENFORCEMENT: Force check on login to guarantee 1002 is Owner
         let accountUpdated = false;
+        if (user.moderationUntil !== undefined) {
+            delete user.moderationUntil;
+            delete user.moderationType;
+            accountUpdated = true;
+        }
         if (user.id === "1002" && user.role !== "Owner") {
             user.role = "Owner";
             accountUpdated = true;
@@ -290,6 +388,7 @@ io.on('connection', (socket) => {
         onlineUsers[socket.id] = {
             username: user.username,
             id: user.id,
+            createdAt: typeof user.createdAt === "string" ? user.createdAt : "",
             role: user.role,
             avatarColor: user.avatarColor || "#98caff",
             avatarImage: user.avatarImage || user.avatarUrl || "",
@@ -697,10 +796,7 @@ io.on('connection', (socket) => {
         }
         const globalMessage = globalMessages.get(data.messageId);
         if (globalMessage) {
-            if (requester.id !== globalMessage.userId && requester.role !== "Owner") {
-                return callback({ success: false, message: "You can only delete your own messages." });
-            }
-            if (requester.id !== globalMessage.userId && requester.role !== "Admin") {
+            if (String(requester.id) !== String(globalMessage.userId) && requester.role !== "Owner") {
                 return callback({ success: false, message: "You can only delete your own messages." });
             }
             globalMessages.delete(data.messageId);
@@ -712,10 +808,7 @@ io.on('connection', (socket) => {
             if (!Array.isArray(messages)) continue;
             const message = messages.find(item => item && item.messageId === data.messageId);
             if (!message) continue;
-            if (requester.id !== message.userId && requester.role !== "Owner") {
-                return callback({ success: false, message: "You can only delete your own messages." });
-            }
-            if (requester.id !== message.userId && requester.role !== "Admin") {
+            if (String(requester.id) !== String(message.userId) && requester.role !== "Owner") {
                 return callback({ success: false, message: "You can only delete your own messages." });
             }
             db.privateMessages[conversationId] = messages.filter(item => item && item.messageId !== data.messageId);
@@ -732,114 +825,21 @@ io.on('connection', (socket) => {
         return callback({ success: false, message: "That message is no longer available to delete." });
     });
 
-    // MESSAGING PIPELINES
-    socket.on('global message', (data, callback) => {
-        const sender = onlineUsers[socket.id];
-        if (!sender) {
-            if (typeof callback === "function") callback({ success: false, message: "Please log in again before sending a message." });
-            return;
+    socket.on('edit chat message', (data, callback) => {
+        const reply = typeof callback === "function" ? callback : () => {};
+        const requester = onlineUsers[socket.id];
+        if (!requester || !data || typeof data.messageId !== "string" ||
+            typeof data.text !== "string" || data.text.length > 4000) {
+            return reply({ success: false, message: "The edited message is invalid or too long." });
         }
-        if (!data || typeof data.text !== "string" || data.text.length > 4000 || !isValidUploadedImage(data.image) || !isValidReply(data.replyTo)) {
-            if (typeof callback === "function") callback({ success: false, message: "The message or attached image is invalid or too large." });
-            return;
-        }
-        if (!data.text.trim() && !data.image) {
-            if (typeof callback === "function") callback({ success: false, message: "Type a message or attach an image." });
-            return;
-        }
-        const messageId = randomUUID();
-        globalMessages.set(messageId, { userId: sender.id });
-        io.emit('broadcast global message', {
-            messageId,
-            senderId: socket.id,
-            userId: sender.id,
-            user: sender.displayName || sender.username,
-            username: sender.username,
-            pronouns: sender.pronouns,
-            role: sender.role || "Member",
-            avatarColor: sender.avatarColor || "#98caff",
-            avatarImage: sender.avatarImage || "",
-            bio: sender.bio || "",
-            bannerColor: sender.bannerColor || "#84c5d0",
-            bannerImage: sender.bannerImage || "",
-            messageColor: sender.messageColor || "#202124",
-            nameColor: sender.nameColor || "#202124",
-            messageFont: sender.messageFont || "system-ui",
-            text: data.text,
-            image: data.image || "",
-            replyTo: normalizeReply(data.replyTo),
-            timestamp: new Date().toISOString()
-        });
-        if (typeof callback === "function") callback({ success: true });
-    });
+        const editedText = data.text.trim();
+        if (!editedText) return reply({ success: false, message: "A message cannot be empty." });
 
-    socket.on('private message', (data, callback) => {
-        if (!data || typeof data.targetId !== "string" || typeof data.text !== "string" || data.text.length > 4000 || !isValidUploadedImage(data.image) || !isValidReply(data.replyTo)) {
-            return callback({ success: false, message: "The message or attached image is invalid or too large." });
-        }
-        const sender = onlineUsers[socket.id];
-        if (!sender) {
-            return callback({ success: false, message: "Please log in again before sending a message." });
-        }
-        const targetUserId = data.targetId.trim();
-        if (!targetUserId || targetUserId === String(sender.id)) {
-            return callback({ success: false, message: "Choose another account to message." });
-        }
-        const db = readDB();
-        const recipient = db.users.find(user => user.id === targetUserId);
-        if (!recipient) return callback({ success: false, message: "That account ID is invalid." });
-        const conversationId = privateConversationId(sender.id, recipient.id);
-        const payload = {
-            messageId: randomUUID(),
-            conversationId,
-            senderId: sender.id,
-            recipient: {
-                id: recipient.id,
-                username: recipient.username,
-                displayName: recipient.displayName || recipient.username
-            },
-            userId: sender.id,
-            user: sender.displayName || sender.username,
-            username: sender.username,
-            pronouns: sender.pronouns,
-            role: sender.role,
-            avatarColor: sender.avatarColor || "#98caff",
-            avatarImage: sender.avatarImage || "",
-            bio: sender.bio || "",
-            bannerColor: sender.bannerColor || "#84c5d0",
-            bannerImage: sender.bannerImage || "",
-            messageColor: sender.messageColor || "#202124",
-            nameColor: sender.nameColor || "#202124",
-            messageFont: sender.messageFont || "system-ui",
-            text: data.text,
-            image: data.image || "",
-            replyTo: normalizeReply(data.replyTo),
-            timestamp: new Date().toISOString()
-        };
-        if (!data.text.trim() && !data.image) {
-            return callback({ success: false, message: "Type a message or attach an image." });
-        }
-        if (!db.privateMessages || typeof db.privateMessages !== "object" || Array.isArray(db.privateMessages)) {
-            db.privateMessages = {};
-        }
-        if (!Array.isArray(db.privateMessages[conversationId])) db.privateMessages[conversationId] = [];
-        db.privateMessages[conversationId].push(payload);
-        try {
-            writeDB(db);
-        } catch {
-            return callback({ success: false, message: "Your message could not be saved. Please try again." });
-        }
-        io.to(`user:${sender.id}`).to(`user:${recipient.id}`).emit('broadcast private message', payload);
-        callback({ success: true });
-    });
-
-    socket.on('disconnect', () => {
-        if (onlineUsers[socket.id]) {
-            delete onlineUsers[socket.id];
-            io.emit('update user lists', onlineUsers);
-        }
-    });
-});
-
-const PORT = Number(process.env.PORT) || 3009;
-server.listen(PORT, () => console.log(`Server executing successfully on port ${PORT}`));
+        const globalMessage = globalMessages.get(data.messageId);
+        if (globalMessage) {
+            if (String(requester.id) !== String(globalMessage.userId) && requester.role !== "Owner") {
+                return reply({ success: false, message: "You can only edit your own messages." });
+            }
+            globalMessage.text = editedText;
+            globalMessage.editedAt = new Date().toISOString();
+            io.emit('edit chat message', {
