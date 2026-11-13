@@ -946,15 +946,45 @@
             display: flex;
         }
 
+        .quick-links {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            left: 15px;
+            display: flex;
+            height: 36px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .profile-btn {
+            position: relative;
+            top: auto;
+            left: auto;
+            min-height: 34px;
+            align-items: center;
+        }
+
         .friends-btn {
-            left: 598px;
-            align-content: center;
-            flex-wrap: wrap;
-            justify-content: center;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
         }
 
         .settings-btn {
-        left: 1156px;
+            margin-left: auto;
+        }
+
+        .zoom-btn {
+            position: absolute;
+            top: 0;
+            left: 95px;
+            margin: 0;
+            text-decoration: none;
+        }
+
+        .zoom-btn .fa {
+            margin-right: 5px;
         }
 
         .settings-panel {
@@ -1223,6 +1253,50 @@
             font-size: 1.15rem;
         }
 
+        .command-suggestions {
+            position: absolute;
+            z-index: 21;
+            right: 55px;
+            bottom: calc(100% - 5px);
+            left: 60px;
+            max-height: 220px;
+            overflow-y: auto;
+            padding: 5px;
+            border: 1px solid #b8d5ef;
+            border-radius: 8px;
+            background: #fff;
+            box-shadow: 0 4px 14px rgba(20, 50, 80, 0.2);
+            color: #315d82;
+            text-align: left;
+        }
+
+        .command-suggestion {
+            display: block;
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 5px;
+            background: transparent;
+            color: inherit;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .command-suggestion:hover,
+        .command-suggestion:focus-visible {
+            background: #e7f2ff;
+        }
+
+        .command-suggestion small {
+            display: block;
+            color: #64758a;
+        }
+
+        .message-edited {
+            color: #718096;
+            font-size: 0.72rem;
+            font-style: italic;
+        }
+
         .profile-preview-avatar img {
             position: absolute;
             inset: 0;
@@ -1378,6 +1452,41 @@
         }
 
         @media (max-width: 480px) {
+            #btnOpenProfile span,
+            #btnOpenSettings span,
+            .zoom-btn span {
+                display: none;
+            }
+
+            #btnOpenProfile {
+                width: 42px;
+                justify-content: center;
+            }
+
+            #btnOpenProfile svg {
+                margin: 0;
+            }
+
+            .zoom-btn {
+                left: 48px;
+                width: 34px;
+                justify-content: center;
+                padding: 4px;
+            }
+
+            .zoom-btn .fa {
+                margin: 0;
+            }
+
+            #btnOpenSettings {
+                width: 42px;
+                justify-content: center;
+            }
+
+            #btnOpenSettings svg {
+                margin: 0;
+            }
+
             .online-users-panel {
                 gap: 8px;
                 padding: 8px 10px;
@@ -1591,6 +1700,16 @@ html[data-theme="dark"] .target-id-bar label {
 html[data-theme="dark"] .mention-suggestions {
     border-color: #3a4b61;
     background: #182638;
+}
+
+html[data-theme="dark"] .command-suggestions {
+    border-color: #3a4b61;
+    background: #182638;
+    color: #d7e5f5;
+}
+
+html[data-theme="dark"] .command-suggestion small {
+    color: #a9bbd1;
 }
 
 html[data-theme="dark"] .mention-suggestion {
