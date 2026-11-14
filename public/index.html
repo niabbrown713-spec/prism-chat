@@ -2169,4 +2169,37 @@ deleteButton.title = currentUser.role === 'Owner' && !isOwnAccountMessage ? 'Del
 deleteButton.innerHTML = '<i class="fa fa-trash-o" aria-hidden="true"></i>';
 deleteButton.addEventListener('click', event => {
 event.stopPropagation();
-if (!wi
+if (!window.confirm('Are you sure you want to delete this message?')) return;
+deleteButton.disabled = true;
+socket.timeout(8000).emit('delete chat message', { messageId }, (error, response) => {
+deleteButton.disabled = false;
+if (error || !response || !response.success) {
+alert(response && response.message ? response.message : 'Could not delete the message. Try again.');
+}
+});
+});
+messageActions.appendChild(deleteButton);
+}
+container.appendChild(messageActions);
+chatMessages.appendChild(container);
+}
+function closeImageViewer() {
+imageViewer.classList.add('hidden');
+imageViewerContent.removeAttribute('src');
+if (imageViewerTrigger && imageViewerTrigger.isConnected) imageViewerTrigger.focus();
+imageViewerTrigger = null;
+}
+btnCloseImageViewer.addEventListener('click', closeImageViewer);
+imageViewer.addEventListener('click', event => {
+if (event.target === imageViewer) closeImageViewer();
+});
+document.addEventListener('keydown', event => {
+if (event.key === 'Escape' && !imageViewer.classList.contains('hidden')) closeImageViewer();
+if (event.key === 'Escape') dmRecipientModal.classList.add('hidden');
+if (event.key === 'Escape') friendsModal.classList.add('hidden');
+if (event.key === 'Escape') settingsModal.classList.add('hidden');
+if (event.key === 'Escape') closeReportModal();
+});
+</script>
+</body>
+</html>
