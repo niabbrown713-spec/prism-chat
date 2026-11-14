@@ -1686,7 +1686,7 @@ html[data-theme="dark"] .message.pinged-msg .message-text {
 
 html[data-theme="dark"] .reply-context-line,
 html[data-theme="dark"] .reply-context-text {
-    background: #1c2a3c;
+    background: none;
     color: #c4d0df;
 }
 
