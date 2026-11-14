@@ -992,6 +992,9 @@
             top: 0;
             right: 100px;
             margin: 0;
+            display: flex;
+            align-content: center;
+            flex-wrap: wrap;
         }
 
         .profile-panel.report-panel {
@@ -1557,7 +1560,8 @@
         }
 
 .profile-btn span {
-    margin-top: 4px;
+    margin-bottom: 1px;
+    justify-self: center;
 }
 
 .profile-btn svg {
